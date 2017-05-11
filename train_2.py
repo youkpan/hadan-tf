@@ -39,10 +39,10 @@ print("Model restore")
 #merged_summary_op = tf.merge_all_summaries()
 
 start_it = 0
-iteration = 200
-banch_size = 2000
+banch_size = 100
+loop_cnt = 200
 
-step_times = 200/iteration
+step_times = 200/banch_size
 
 
 #img = scipy.misc.imread('steering_wheel_image.png', mode="RGB")
@@ -63,15 +63,15 @@ def tf_sgd_relu_nn2(sess1=0):
   learn_r = 0.001
   banch_i = 90000
   accuracy2 = 0
-  BTCC_data.load_next_banch(banch_i,banch_size)
+  BTCC_data.load_next_banch(banch_i,loop_cnt)
   key = ''
   #summary_writer = tf.train.SummaryWriter('tf_train', sess.graph)
   #tf.scalar_summary("accuracy", accuracy2)
 
   #train over the dataset about 30 times
   for i in range(start_it,int(BTCC_data.num_images * 100)):
-    train_batch_pointer = i*iteration
-    xs,x_digit, ys,learn_r2 = BTCC_data.LoadTrainBatch(train_batch_pointer,iteration)
+    train_batch_pointer = i*banch_size
+    xs,x_digit, ys,learn_r2 = BTCC_data.LoadTrainBatch(train_batch_pointer,banch_size)
     
     #print("training: %d" % i)
     #train_step.run(feed_dict={model.x: xs, model.y_: ys, model.keep_prob: 0.5})
@@ -105,8 +105,8 @@ def tf_sgd_relu_nn2(sess1=0):
     #print("step run over")
     
     if (i % (100*step_times) == 1) or (key == ord('t')):
-      val_batch_pointer = i*iteration
-      xs,x_digit, ys = BTCC_data.LoadValBatch(val_batch_pointer ,iteration)
+      val_batch_pointer = i*banch_size
+      xs,x_digit, ys = BTCC_data.LoadValBatch(val_batch_pointer ,banch_size)
       mloss = loss.eval(feed_dict={model.x:xs,model.x_digit:x_digit, model.y_: ys, model.keep_prob: 1.0})
       print("step %d, val loss %g"%(i, mloss))
 
@@ -127,11 +127,11 @@ def tf_sgd_relu_nn2(sess1=0):
       summary_writer.add_summary(summary_str, i)
       print("log saved in file: tf_train" )
     '''
-    if (i % (banch_size/iteration) == (banch_size/iteration)-1 or key == ord('n')):
-      banch_i += banch_size
+    if (i % (loop_cnt/banch_size) == (loop_cnt/banch_size)-1 or key == ord('n')):
+      banch_i += loop_cnt
       if(banch_i>115000):
         banch_i = 0
-      BTCC_data.load_next_banch(banch_i%115000,banch_size)
+      BTCC_data.load_next_banch(banch_i%115000,loop_cnt)
 
     if (i % (200*step_times) == 100*step_times or (key == ord('s'))):
       print("saving model")
