@@ -1,0 +1,512 @@
+
+
+
+
+ reading data: 90001 8.70 % 
+ signal_2:  10.89 % 
+ signal_1:  18.06 % 
+ signal_0:  44.57 % 
+ signal_n1:  12.12 % 
+ signal_n2:  14.37 % 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ reading data: 95001 13.04 % 
+ signal_2:  8.27 % 
+ signal_1:  15.56 % 
+ signal_0:  54.96 % 
+ signal_n1:  10.15 % 
+ signal_n2:  11.06 % 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ reading data: 100001 17.39 % 
+ signal_2:  6.58 % 
+ signal_1:  14.84 % 
+ signal_0:  60.01 % 
+ signal_n1:  9.24 % 
+ signal_n2:  9.32 % 
+finish read data
+num_train_images 19000
+Minibatch loss at step 2001: 0.872088  loss_avg:0.638473
+Minibatch accuracy: 67.0%
+loss not decress
+saving summary
+log saved in file: tf_train
+Minibatch loss at step 2011: 0.936528  loss_avg:0.638473
+Minibatch accuracy: 61.0%
+loss not decress
+Minibatch loss at step 2021: 0.966516  loss_avg:0.638473
+Minibatch accuracy: 59.0%
+loss not decress
+learn rate changed:0.001200
+Minibatch loss at step 2031: 0.965788  loss_avg:0.966516
+Minibatch accuracy: 60.0%
+Minibatch loss at step 2041: 0.993094  loss_avg:0.966480
+Minibatch accuracy: 55.0%
+loss not decress
+step 2041, val loss 0.922922
+Minibatch loss at step 2051: 0.960959  loss_avg:0.966480
+Minibatch accuracy: 58.0%
+Minibatch loss at step 2061: 0.951880  loss_avg:0.966204
+Minibatch accuracy: 59.0%
+Minibatch loss at step 2071: 0.998602  loss_avg:0.965487
+Minibatch accuracy: 55.0%
+loss not decress
+Minibatch loss at step 2081: 0.912252  loss_avg:0.965487
+Minibatch accuracy: 64.0%
+saving summary
+log saved in file: tf_train
+Minibatch loss at step 2091: 0.894975  loss_avg:0.962826
+Minibatch accuracy: 65.0%
+Minibatch loss at step 2101: 0.872256  loss_avg:0.959433
+Minibatch accuracy: 67.0%
+step 2101, val loss 0.920759
+Minibatch loss at step 2111: 1.107518  loss_avg:0.955074
+Minibatch accuracy: 45.0%
+loss not decress
+Minibatch loss at step 2121: 1.058771  loss_avg:0.955074
+Minibatch accuracy: 51.0%
+loss not decress
+Minibatch loss at step 2131: 0.974423  loss_avg:0.955074
+Minibatch accuracy: 57.0%
+loss not decress
+Minibatch loss at step 2141: 0.994588  loss_avg:0.955074
+Minibatch accuracy: 55.0%
+loss not decress
+Minibatch loss at step 2151: 0.909590  loss_avg:0.955074
+Minibatch accuracy: 63.0%
+Minibatch loss at step 2161: 1.005197  loss_avg:0.952800
+Minibatch accuracy: 56.0%
+loss not decress
+step 2161, val loss 0.922109
+saving summary
+log saved in file: tf_train
+Minibatch loss at step 2171: 1.071119  loss_avg:0.952800
+Minibatch accuracy: 50.0%
+loss not decress
+Minibatch loss at step 2181: 0.919373  loss_avg:0.952800
+Minibatch accuracy: 63.0%
+Minibatch loss at step 2191: 0.876172  loss_avg:0.951129
+Minibatch accuracy: 67.0%
+Minibatch loss at step 2201: 0.940516  loss_avg:0.947381
+Minibatch accuracy: 61.0%
+Minibatch loss at step 2211: 0.944467  loss_avg:0.947038
+Minibatch accuracy: 59.0%
+Minibatch loss at step 2221: 0.953116  loss_avg:0.946909
+Minibatch accuracy: 60.0%
+loss not decress
+step 2221, val loss 0.920876
+Minibatch loss at step 2231: 1.011420  loss_avg:0.946909
+Minibatch accuracy: 55.0%
+loss not decress
+Minibatch loss at step 2241: 0.965672  loss_avg:0.946909
+Minibatch accuracy: 58.0%
+loss not decress
+saving summary
+log saved in file: tf_train
+Minibatch loss at step 2251: 0.960296  loss_avg:0.946909
+Minibatch accuracy: 59.0%
+loss not decress
+Minibatch loss at step 2261: 0.989691  loss_avg:0.946909
+Minibatch accuracy: 55.0%
+loss not decress
+Minibatch loss at step 2271: 0.916510  loss_avg:0.946909
+Minibatch accuracy: 64.0%
+Minibatch loss at step 2281: 0.909183  loss_avg:0.945389
+Minibatch accuracy: 65.0%
+step 2281, val loss 0.921343
+Minibatch loss at step 2291: 0.874810  loss_avg:0.943579
+Minibatch accuracy: 67.0%
+Minibatch loss at step 2301: 1.105865  loss_avg:0.940140
+Minibatch accuracy: 45.0%
+loss not decress
+Minibatch loss at step 2311: 1.078325  loss_avg:0.940140
+Minibatch accuracy: 51.0%
+loss not decress
+Minibatch loss at step 2321: 0.983769  loss_avg:0.940140
+Minibatch accuracy: 57.0%
+loss not decress
+saving summary
+log saved in file: tf_train
+Minibatch loss at step 2331: 0.982061  loss_avg:0.940140
+Minibatch accuracy: 55.0%
+loss not decress
+learn rate changed:0.000840
+Minibatch loss at step 2341: 0.905418  loss_avg:0.982061
+Minibatch accuracy: 63.0%
+step 2341, val loss 0.917219
+Minibatch loss at step 2351: 0.983837  loss_avg:0.978229
+Minibatch accuracy: 56.0%
+loss not decress
+Minibatch loss at step 2361: 1.064118  loss_avg:0.978229
+Minibatch accuracy: 50.0%
+loss not decress
+Minibatch loss at step 2371: 0.919500  loss_avg:0.978229
+Minibatch accuracy: 63.0%
+Minibatch loss at step 2381: 0.869406  loss_avg:0.975292
+Minibatch accuracy: 67.0%
+saving summary
+log saved in file: tf_train
+Minibatch loss at step 2391: 0.919895  loss_avg:0.969998
+Minibatch accuracy: 61.0%
+
+ reading data: 100001 0.00 % 
+ signal_2:  0.00 % 
+ signal_1:  0.00 % 
+ signal_0:  100.00 % 
+ signal_n1:  0.00 % 
+ signal_n2:  0.00 % 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ reading data: 105001 4.35 % 
+ signal_2:  0.08 % 
+ signal_1:  5.00 % 
+ signal_0:  91.64 % 
+ signal_n1:  3.16 % 
+ signal_n2:  0.12 % 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ reading data: 110001 8.70 % 
+ signal_2:  0.32 % 
+ signal_1:  4.04 % 
+ signal_0:  93.15 % 
+ signal_n1:  2.05 % 
+ signal_n2:  0.44 % 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ reading data: 115001 13.04 % 
+ signal_2:  0.99 % 
+ signal_1:  4.63 % 
+ signal_0:  91.87 % 
+ signal_n1:  2.04 % 
+ signal_n2:  0.47 % 
+finish read data
+num_train_images 15807
+saving model
+Model saved in file: ./save/model.ckpt
+Minibatch loss at step 2401: 0.478470  loss_avg:0.967493
+Minibatch accuracy: 92.0%
+step 2401, val loss 0.41359
+saving summary
+log saved in file: tf_train
+Minibatch loss at step 2411: 0.441903  loss_avg:0.943042
+Minibatch accuracy: 87.0%
+Minibatch loss at step 2421: 0.496773  loss_avg:0.917985
+Minibatch accuracy: 87.0%
+Minibatch loss at step 2431: 0.522121  loss_avg:0.896924
+Minibatch accuracy: 86.0%
+Minibatch loss at step 2441: 0.342421  loss_avg:0.878184
+Minibatch accuracy: 92.0%
+Minibatch loss at step 2451: 0.445373  loss_avg:0.851396
+Minibatch accuracy: 88.0%
+Minibatch loss at step 2461: 0.468425  loss_avg:0.831095
+Minibatch accuracy: 86.0%
+step 2461, val loss 0.328393
+Minibatch loss at step 2471: 0.488140  loss_avg:0.812961
+Minibatch accuracy: 87.0%
+Minibatch loss at step 2481: 0.367460  loss_avg:0.796720
+Minibatch accuracy: 91.0%
+saving summary
+log saved in file: tf_train
+Minibatch loss at step 2491: 0.384254  loss_avg:0.775257
+Minibatch accuracy: 90.0%
+Minibatch loss at step 2501: 0.305907  loss_avg:0.755707
+Minibatch accuracy: 93.0%
+Minibatch loss at step 2511: 0.351794  loss_avg:0.733217
+Minibatch accuracy: 91.0%
+Minibatch loss at step 2521: 0.583571  loss_avg:0.714146
+Minibatch accuracy: 83.0%
+step 2521, val loss 0.401683
+Minibatch loss at step 2531: 0.429128  loss_avg:0.707617
+Minibatch accuracy: 88.0%
+Minibatch loss at step 2541: 0.469487  loss_avg:0.693693
+Minibatch accuracy: 87.0%
+Minibatch loss at step 2551: 0.485685  loss_avg:0.682482
+Minibatch accuracy: 86.0%
+Minibatch loss at step 2561: 0.354850  loss_avg:0.672643
+Minibatch accuracy: 93.0%
+saving summary
+log saved in file: tf_train
+Minibatch loss at step 2571: 0.400116  loss_avg:0.656753
+Minibatch accuracy: 90.0%
+Minibatch loss at step 2581: 0.556864  loss_avg:0.643921
+Minibatch accuracy: 84.0%
+step 2581, val loss 0.373905
+Minibatch loss at step 2591: 0.284897  loss_avg:0.639568
+Minibatch accuracy: 94.0%
+Minibatch loss at step 2601: 0.521466  loss_avg:0.621835
+Minibatch accuracy: 87.0%
+Minibatch loss at step 2611: 0.427906  loss_avg:0.616816
+Minibatch accuracy: 90.0%
+Minibatch loss at step 2621: 0.308241  loss_avg:0.607371
+Minibatch accuracy: 94.0%
+Minibatch loss at step 2631: 0.343992  loss_avg:0.592414
+Minibatch accuracy: 91.0%
+Minibatch loss at step 2641: 0.366742  loss_avg:0.579993
+Minibatch accuracy: 92.0%
+step 2641, val loss 0.460481
+saving summary
+log saved in file: tf_train
+Minibatch loss at step 2651: 0.447342  loss_avg:0.569331
+Minibatch accuracy: 88.0%
+Minibatch loss at step 2661: 0.445152  loss_avg:0.563231
+Minibatch accuracy: 87.0%
+Minibatch loss at step 2671: 0.430716  loss_avg:0.557327
+Minibatch accuracy: 89.0%
+Minibatch loss at step 2681: 0.468100  loss_avg:0.550997
+Minibatch accuracy: 87.0%
+Minibatch loss at step 2691: 0.422272  loss_avg:0.546852
+Minibatch accuracy: 89.0%
+Minibatch loss at step 2701: 0.499832  loss_avg:0.540623
+Minibatch accuracy: 85.0%
+step 2701, val loss 0.323276
+Minibatch loss at step 2711: 0.467431  loss_avg:0.538583
+Minibatch accuracy: 88.0%
+Minibatch loss at step 2721: 0.573796  loss_avg:0.535026
+Minibatch accuracy: 85.0%
+loss not decress
+saving summary
+log saved in file: tf_train
+Minibatch loss at step 2731: 0.459348  loss_avg:0.535026
+Minibatch accuracy: 86.0%
+Minibatch loss at step 2741: 0.395202  loss_avg:0.531242
+Minibatch accuracy: 90.0%
+Minibatch loss at step 2751: 0.440010  loss_avg:0.524440
+Minibatch accuracy: 88.0%
+Minibatch loss at step 2761: 0.479158  loss_avg:0.520218
+Minibatch accuracy: 86.0%
+step 2761, val loss 0.497941
+Minibatch loss at step 2771: 0.371862  loss_avg:0.518165
+Minibatch accuracy: 89.0%
+Minibatch loss at step 2781: 0.373771  loss_avg:0.510850
+Minibatch accuracy: 91.0%
+Minibatch loss at step 2791: 0.351146  loss_avg:0.503996
+Minibatch accuracy: 93.0%
+
+ reading data: 1 0.00 % 
+ signal_2:  0.00 % 
+ signal_1:  100.00 % 
+ signal_0:  0.00 % 
+ signal_n1:  0.00 % 
+ signal_n2:  0.00 % 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ reading data: 5001 4.35 % 
+ signal_2:  1.54 % 
+ signal_1:  13.36 % 
+ signal_0:  77.34 % 
+ signal_n1:  6.32 % 
+ signal_n2:  1.44 % 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ reading data: 10001 8.70 % 
+ signal_2:  2.25 % 
+ signal_1:  14.95 % 
+ signal_0:  73.69 % 
+ signal_n1:  6.27 % 
+ signal_n2:  2.84 % 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ reading data: 15001 13.04 % 
+ signal_2:  1.85 % 
+ signal_1:  14.15 % 
+ signal_0:  72.96 % 
+ signal_n1:  6.74 % 
+ signal_n2:  4.31 % 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ reading data: 20001 17.39 % 
+ signal_2:  1.52 % 
+ signal_1:  12.10 % 
+ signal_0:  77.46 % 
+ signal_n1:  5.45 % 
+ signal_n2:  3.47 % 
+finish read data
+num_train_images 19000
+Minibatch loss at step 2801: 0.804989  loss_avg:0.496354
+Minibatch accuracy: 74.0%
+loss not decress
+saving summary
+log saved in file: tf_train
+Minibatch loss at step 2811: 0.722232  loss_avg:0.496354
+Minibatch accuracy: 76.0%
+loss not decress
+Minibatch loss at step 2821: 0.682917  loss_avg:0.496354
+Minibatch accuracy: 78.0%
+loss not decress
+step 2821, val loss 0.757398
+Minibatch loss at step 2831: 0.687653  loss_avg:0.496354
+Minibatch accuracy: 79.0%
+loss not decress
+Minibatch loss at step 2841: 0.540530  loss_avg:0.496354
+Minibatch accuracy: 85.0%
+loss not decress
+Minibatch loss at step 2851: 0.723472  loss_avg:0.496354
+Minibatch accuracy: 76.0%
+loss not decress
+Minibatch loss at step 2861: 0.735020  loss_avg:0.496354
+Minibatch accuracy: 75.0%
+loss not decress
+learn rate changed:0.000588
+Minibatch loss at step 2871: 0.812097  loss_avg:0.735020
+Minibatch accuracy: 71.0%
+loss not decress
+Minibatch loss at step 2881: 0.628424  loss_avg:0.735020
+Minibatch accuracy: 80.0%
+step 2881, val loss 0.765447
+saving summary
+log saved in file: tf_train
+Minibatch loss at step 2891: 0.777821  loss_avg:0.729690
+Minibatch accuracy: 75.0%
+loss not decress
+saving model
+Model saved in file: ./save/model.ckpt
+Minibatch loss at step 2901: 0.785872  loss_avg:0.729690
+Minibatch accuracy: 73.0%
+loss not decress
+saving model
+Model saved in file: ./save/model.ckpt
+

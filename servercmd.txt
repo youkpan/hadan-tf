@@ -1,0 +1,20 @@
+# On 127.0.0.1:
+nohup python tfserver.py \
+     --ps_hosts=127.0.0.1:2222 \
+     --worker_hosts=127.0.0.1:2222 \
+     --job_name=ps --task_index=0 &
+# On ps1.example.com:
+ python tfserver.py \
+     --ps_hosts=127.0.0.1:2222 \
+     --worker_hosts=127.0.0.1:2222 \
+     --job_name=ps --task_index=1
+# On worker0.example.com:
+nohup python tfserver.py \
+     --ps_hosts=grpc://localhost:2222 \
+     --worker_hosts=127.0.0.1:2223 \
+     --job_name=worker --task_index=0 &
+# On worker1.example.com:
+ python tfserver.py \
+     --ps_hosts=127.0.0.1:2222 \
+     --worker_hosts=127.0.0.1:2223 \
+     --job_name=worker --task_index=1
