@@ -114,6 +114,7 @@ def load_next_banch(start_index,banch_size):
       price_img = zeros((120,120), dtype=float)
       last_pix_y = 0
       minn = 0
+
       for x in range(0,120):
         if data_v2[x] <= minn or x == 0:
           minn = data_v2[x]
@@ -147,6 +148,7 @@ def load_next_banch(start_index,banch_size):
 
       BTCC_pro_market_img.append(price_img)
       BTCC_pro_market_price.append(price)
+      BTCC_pro_market_price_last.append(data_v2)
 
       xs.append(i)
       
@@ -249,6 +251,9 @@ def get_price(i):
 
 def get_xdigit(i):
   return BTCC_pro_data[i]
+  
+def get_price_last(i):
+  return BTCC_pro_market_price_last[i]
 
 def LoadTrainBatch(train_batch_pointer,batch_size):
     #global train_batch_pointer
