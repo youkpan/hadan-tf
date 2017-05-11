@@ -2,7 +2,7 @@ import scipy.misc
 import scipy.ndimage
 import random
 from numpy  import *
-import cv2
+#import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy  import *
@@ -11,7 +11,11 @@ import tensorflow as tf
 
 num_images=0
 
-def load_next_banch(start_index):
+global BTCC_pro_data
+global BTCC_pro_market_img
+global BTCC_pro_market_price
+
+def load_next_banch(start_index,banch_size):
 
   global num_images
 
@@ -31,6 +35,8 @@ def load_next_banch(start_index):
   BTCC_pro_data = []
   global BTCC_pro_market_img
   BTCC_pro_market_img = []
+  global BTCC_pro_market_price
+  BTCC_pro_market_price = []
 
   signal_2 =0;
   signal_1 =0;
@@ -41,8 +47,9 @@ def load_next_banch(start_index):
   imgblank = zeros((5,120), dtype=float)
 
   ll=0
+  last_price = 0
   #read data.txt
-  with open("BTCC_pro_train_data.txt") as f:
+  with open("../BTCC_pro_train_data.txt") as f:
     print(" reading data:")
     for line in f:
       if(ll< start_index):
@@ -88,7 +95,9 @@ def load_next_banch(start_index):
         vol_bar[0][x] = vol_sum
         #print("vol_sum x:%d sum:%d"%(x,vol_sum))
 
-      price = data[-4]
+      price = float(data[-4])
+      if(last_price==0):
+        last_price = price
       amount = data[-3]
 
       data_bar = zeros((5,120), dtype=float)
@@ -137,32 +146,63 @@ def load_next_banch(start_index):
       #input_img = tf.reshape(input_img,[90,120,1])
 
       BTCC_pro_market_img.append(price_img)
-
+      BTCC_pro_market_price.append(price)
 
       xs.append(i)
-      BTCC_pro_data.append(data_v)
+      
       data_predict = float(data[-2])
+      diff = (price-last_price)*1000/price
+      last_price = price
       #print(data_predict)
-      if data_predict>27:
-        ys.append(np.array([1.0,0.0,0.0]) )
+      '''
+      if diff>5:
+        ys.append(np.array([1.0,0.0]) )
         signal_2 +=1
-      elif data_predict>15:
-        ys.append(np.array([1.0,0.0,0.0]))
+        data_v.append (1)
+        data_v.append (0)
+      elif data_predict>2:
+        ys.append(np.array([1.0,0.0]))
         #print(1)
         signal_1 +=1
-      elif data_predict>-15:
-        ys.append(np.array([0.0,1.0,0.0]))
+
+        data_v.append (1)
+        data_v.append (0)
+      el
+      '''
+      rand = random.random()
+      win = 1.0
+      loss = 0.0
+      if(rand<0.6):
+        win = 0.02*abs(data_predict)+0.5
+      if(rand<0.1):
+        win = 0.03*abs(data_predict)+0.5
+      if(rand>0.6):
+        win = 0.37 + 0.02*abs(data_predict)
+      if(rand>0.9):
+        win = 0.27 + 0.02*abs(data_predict)
+
+      if(win>0.95):
+        win = 0.95
+      loss = 1-win
+
+      if data_predict>0:
+        
+        ys.append(np.array([win,loss]))
         signal_0 +=1
-      elif data_predict>-27:
-        ys.append(np.array([0.0,0.0,1.0]))
-        signal_n1 +=1
+        data_v.append (1)
+        data_v.append (0)
+
       else:
-        ys.append(np.array([0.0,0.0,1.0]))
+        ys.append(np.array([loss,win]))
         signal_n2 +=1
+        data_v.append (0)
+        data_v.append (1)
+
+      BTCC_pro_data.append(data_v)
       
       i+=1
       if(i%1000==1):
-        call("clear")
+        #call("clear")
         print(" reading data: %d %2.2f %% \r"%(start_index+i,float(float(i)*100/115001)))
         print(" signal_2:  %2.2f %% \r"%(float(float(signal_2)*100/i)))
         print(" signal_1:  %2.2f %% \r"%(float(float(signal_1)*100/i)))
@@ -170,7 +210,7 @@ def load_next_banch(start_index):
         print(" signal_n1:  %2.2f %% \r"%(float(float(signal_n1)*100/i)))
         print(" signal_n2:  %2.2f %% \r"%(float(float(signal_n2)*100/i)))
 
-      if(i>20000):
+      if(i>banch_size):
         break
 
   print("finish read data")
@@ -201,10 +241,14 @@ def load_next_banch(start_index):
 
 #imgblank = ones((5,200,3), dtype=float)
 
-def get_data(i):
-
+def get_data_img(i):
   return BTCC_pro_market_img[i]
 
+def get_price(i):
+  return BTCC_pro_market_price[i]
+
+def get_xdigit(i):
+  return BTCC_pro_data[i]
 
 def LoadTrainBatch(train_batch_pointer,batch_size):
     #global train_batch_pointer
@@ -218,9 +262,10 @@ def LoadTrainBatch(train_batch_pointer,batch_size):
             img_index = len(BTCC_pro_market_img)-1
         #print("img_index %d"% img_index )
 
-        x_out.append(get_data(img_index))
+        x_out.append(get_data_img(img_index))
         x_digit.append(BTCC_pro_data[img_index])
         y_out.append(train_ys[(train_batch_pointer + i) % num_train_images])
+        learn_r = 0.001
     #return x_out, y_out
     #print("train pointer %d ,batch index %d ,img_index %d"% ( train_batch_pointer,((train_batch_pointer ) % num_train_images),img_index))
     '''
@@ -247,7 +292,7 @@ def LoadTrainBatch(train_batch_pointer,batch_size):
 	#   continue
 
 
-    return x_out,x_digit, y_out
+    return x_out,x_digit, y_out,learn_r
 
 def LoadValBatch(val_batch_pointer ,batch_size):
     #global val_batch_pointer
@@ -257,7 +302,7 @@ def LoadValBatch(val_batch_pointer ,batch_size):
     for i in range(0, batch_size):
         img_index = val_xs[(val_batch_pointer + i) % num_val_images]
         x_digit.append(BTCC_pro_data[img_index])
-        x_out.append(get_data(img_index))#,imgblank,img_5,imgblank,img_10,imgblank,img_20)))
+        x_out.append(get_data_img(img_index))#,imgblank,img_5,imgblank,img_10,imgblank,img_20)))
         y_out.append(val_ys[(val_batch_pointer + i) % num_val_images])
     val_batch_pointer += batch_size
     return x_out,x_digit, y_out
