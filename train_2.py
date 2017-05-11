@@ -18,8 +18,8 @@ sess = tf.InteractiveSession()
 #print(FLAGS)
 learning_rate = tf.placeholder(tf.float32, shape=[])
 #loss = tf.reduce_mean(tf.square(tf.subtract(model.y_, model.y)))
-loss = tf.reduce_mean((model.y_[0][0]- model.y[0][0]) **2 + (model.y_[0][1]- model.y[0][1])**2)
-  #tf.nn.softmax_cross_entropy_with_logits( logits= model.y,  labels= model.y_))
+#loss = tf.reduce_mean((model.y_[0][0]- model.y[0][0]) **2 + (model.y_[0][1]- model.y[0][1])**2)
+loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits( logits= model.y,  labels= model.y_))
 
 #loss_summary = tf.scalar_summary("loss", loss)
 
@@ -33,14 +33,14 @@ sess.run(tf.global_variables_initializer())
 #self.init = tf.initialize_variables(tf.all_variables(), name="nInit")
 
 saver = tf.train.Saver()
-#saver.restore(sess,LOGDIR+"/model_1D.ckpt")
+saver.restore(sess,LOGDIR+"/model_1D.ckpt")
 print("Model restore") 
 
 #merged_summary_op = tf.merge_all_summaries()
 
 start_it = 0
-banch_size = 100
-loop_cnt = 200
+banch_size = 1000
+loop_cnt = 20000
 
 step_times = 200/banch_size
 
@@ -60,7 +60,7 @@ def tf_sgd_relu_nn2(sess1=0):
     sess =sess1
   last_loss=0
   loss_change_cnt = 0
-  learn_r = 0.001
+  learn_r = 0.001 
   banch_i = 90000
   accuracy2 = 0
   BTCC_data.load_next_banch(banch_i,loop_cnt)

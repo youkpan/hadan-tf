@@ -58,8 +58,17 @@ def load_next_banch(start_index,banch_size):
         ll+=1
         continue
       data = line.split('|')
-      if(len(data[-2])==0):
+      try:
+        if(len(data[-2])==0):
+          continue
+      except Exception as e:
         continue
+        raise
+      else:
+        pass
+      finally:
+        pass
+
       #print(len(data))
       #print(data)
       #print(data[2:268])
@@ -204,7 +213,7 @@ def load_next_banch(start_index,banch_size):
 
       BTCC_pro_data.append(data_v)
       
-      i+=10+int(random.random()*20)
+      i+=1 #10+int(random.random()*20)
       if(i%2000==1):
         #call("clear")
         print(" reading data: %d %2.2f %% \r"%(start_index+i,float(float(i)*100/115001)))
@@ -248,6 +257,10 @@ def load_next_banch(start_index,banch_size):
 def get_data_img(i):
   return BTCC_pro_market_price_last[i]
 
+
+def get_data_img0(i):
+  return BTCC_pro_market_img[i]
+
 def get_price(i):
   return BTCC_pro_market_price[i]
 
@@ -263,7 +276,7 @@ def LoadTrainBatch(train_batch_pointer,batch_size):
     x_digit = []
     y_out = []
 
-    for i in range(0, num_train_images-1):
+    for i in range(0, batch_size-1):
         img_index = train_xs[(train_batch_pointer + i) % num_train_images]
         if img_index > len(BTCC_pro_market_img)-1:
             img_index = len(BTCC_pro_market_img)-1
@@ -306,7 +319,7 @@ def LoadValBatch(val_batch_pointer ,batch_size):
     x_out = []
     y_out = []
     x_digit = []
-    for i in range(0, num_val_images):
+    for i in range(0, batch_size):
         img_index = val_xs[(val_batch_pointer + i) % num_val_images]
         x_digit.append(BTCC_pro_data[img_index])
         x_out.append(get_data_img(img_index))#,imgblank,img_5,imgblank,img_10,imgblank,img_20)))
