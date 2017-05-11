@@ -10,16 +10,16 @@ mshape = 268 # (28+24+24+120)*2+24+7+31+12+2
 
 
 _weights = {
-    'wc11': tf.Variable(tf.random_normal([5, 5, 1, 64])),
-    'wc12': tf.Variable(tf.random_normal([3, 3, 64, 64])),
-    'wc13': tf.Variable(tf.random_normal([3, 3, 64, 64])),
-    'wc21': tf.Variable(tf.random_normal([3, 3, 64, 64])),
-    'wc22': tf.Variable(tf.random_normal([3, 3, 64, 64])),
-    'wc23': tf.Variable(tf.random_normal([3, 3, 64, 64])),
+    'wc11': tf.Variable(tf.random_normal([5, 1, 64])),
+    'wc12': tf.Variable(tf.random_normal([3, 64, 64])),
+    'wc13': tf.Variable(tf.random_normal([3, 64, 64])),
+    'wc21': tf.Variable(tf.random_normal([3, 64, 64])),
+    'wc22': tf.Variable(tf.random_normal([3, 64, 64])),
+    'wc23': tf.Variable(tf.random_normal([3, 64, 64])),
     #'wc31': tf.Variable(tf.random_normal([3, 3, 196, 256])),
     #'wc32': tf.Variable(tf.random_normal([3, 3, 256, 256])),
     #'wc33': tf.Variable(tf.random_normal([3, 3, 256, 256])),
-    'wd1': tf.Variable(tf.random_normal([15*60*64, 512])),
+    'wd1': tf.Variable(tf.random_normal([30*64, 512])),
     'wd2': tf.Variable(tf.random_normal([512, 512])),
     'out': tf.Variable(tf.random_normal([512, 3]))
 }
@@ -40,7 +40,7 @@ _biases = {
 }
 
 
-x = tf.placeholder(tf.float32, shape=[None, n_input,n_input])
+x = tf.placeholder(tf.float32, shape=[None, n_input])
 x_digit = tf.placeholder(tf.float32, shape=[None, mshape])
 y_ = tf.placeholder(tf.float32, shape=[None, n_classes])
 
@@ -57,6 +57,8 @@ def conv2d2(name, l_input, w, b,s=1):
     
       return tf.nn.relu(tf.nn.bias_add(tf.nn.conv2d(l_input, w, strides=[1, s, s, 1], padding='SAME'),b), name=name)
 
+def conv1d2(name, l_input, w, b,s=1):
+    return tf.nn.relu(tf.nn.bias_add(tf.nn.conv1d(l_input,w,stride=s, padding='SAME'),b), name=name)
 
 def max_pool(name, l_input, k):
     return tf.nn.max_pool(l_input, ksize=[1, k, k, 1], strides=[1, k, k, 1], padding='SAME', name=name)
@@ -78,6 +80,9 @@ def bias_variable(shape,name):
 def conv2d(x, W, stride):
   return tf.nn.conv2d(x, W, strides=[1, stride, stride, 1], padding='VALID')
 
+def conv1d(x, W, stride):
+  return tf.nn.conv2d(x, W, strides=[1, stride, 1], padding='VALID')
+
 def variable_summaries(var, name):
     """Attach a lot of summaries to a Tensor."""
     with tf.name_scope('summaries'):
@@ -93,23 +98,23 @@ def variable_summaries(var, name):
 #variable_summaries(x,"placeholder_x")
 #variable_summaries(y_,"placeholder_y")
 
-_X = tf.reshape(x, shape=[-1, 120, 120, 1])
+_X = tf.reshape(x, shape=[-1, n_input, 1])
 
 #  6x6 s 3
-conv1 = conv2d2('conv11', _X, _weights['wc11'], _biases['bc11'],2)
-conv1 = conv2d2('conv12', conv1, _weights['wc12'], _biases['bc12'],2)
-conv1 = conv2d2('conv13', conv1, _weights['wc13'], _biases['bc13'],1)
-#  60x60
+conv1 = conv1d2('conv11', _X, _weights['wc11'], _biases['bc11'],2)
+conv1 = conv1d2('conv12', conv1, _weights['wc12'], _biases['bc12'],2)
+conv1 = conv1d2('conv13', conv1, _weights['wc13'], _biases['bc13'],1)
+#  60x60+
 #pool1 = max_pool('pool1', conv1, k=2)
 # 
-#norm1 = norm('norm1', pool1, lsize=4)
+#norm1 = norm('norm1', conv1, lsize=4)
 # Dropout
 norm1 = tf.nn.dropout(conv1, keep_prob)
 
 # 
-conv2 = conv2d2('conv21', norm1, _weights['wc21'], _biases['bc21'],1)
-conv2 = conv2d2('conv22', conv2, _weights['wc22'], _biases['bc22'],1)
-conv2 = conv2d2('conv23', conv2, _weights['wc23'], _biases['bc23'],1)
+conv2 = conv1d2('conv21', norm1, _weights['wc21'], _biases['bc21'],1)
+conv2 = conv1d2('conv22', conv2, _weights['wc22'], _biases['bc22'],1)
+conv2 = conv1d2('conv23', conv2, _weights['wc23'], _biases['bc23'],1)
 
 #  to 30x30
 #pool2 = max_pool('pool2', conv2, k=2)

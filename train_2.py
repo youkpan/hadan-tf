@@ -17,7 +17,8 @@ sess = tf.InteractiveSession()
 #logits = tf.matmul(hidden, weights2) + biases2
 #print(FLAGS)
 learning_rate = tf.placeholder(tf.float32, shape=[])
-loss = tf.reduce_mean(tf.square(tf.subtract(model.y_, model.y)))
+#loss = tf.reduce_mean(tf.square(tf.subtract(model.y_, model.y)))
+loss = tf.reduce_mean((model.y_[0][0]- model.y[0][0]) **2 + (model.y_[0][1]- model.y[0][1])**2)
   #tf.nn.softmax_cross_entropy_with_logits( logits= model.y,  labels= model.y_))
 
 #loss_summary = tf.scalar_summary("loss", loss)
@@ -32,14 +33,15 @@ sess.run(tf.global_variables_initializer())
 #self.init = tf.initialize_variables(tf.all_variables(), name="nInit")
 
 saver = tf.train.Saver()
-saver.restore(sess,LOGDIR+"/model.ckpt")
+#saver.restore(sess,LOGDIR+"/model_1D.ckpt")
 print("Model restore") 
 
 #merged_summary_op = tf.merge_all_summaries()
 
 start_it = 0
 iteration = 200
-banch_size = 10000
+banch_size = 2000
+
 step_times = 200/iteration
 
 
@@ -109,9 +111,9 @@ def tf_sgd_relu_nn2(sess1=0):
       print("step %d, val loss %g"%(i, mloss))
 
       if (mloss < 0.02):
-        checkpoint_path = os.path.join(LOGDIR, "%g-model.ckpt"%mloss)
+        checkpoint_path = os.path.join(LOGDIR, "%g-model_1D.ckpt"%mloss)
         filename = saver.save(sess, checkpoint_path)
-        checkpoint_path = os.path.join(LOGDIR, "model.ckpt")
+        checkpoint_path = os.path.join(LOGDIR, "model_1D.ckpt")
         filename = saver.save(sess, checkpoint_path)
         print("Model saved in file: %s" % filename)
         break
@@ -135,7 +137,7 @@ def tf_sgd_relu_nn2(sess1=0):
       print("saving model")
       if not os.path.exists(LOGDIR):
               os.makedirs(LOGDIR)
-      checkpoint_path = os.path.join(LOGDIR, "model.ckpt")
+      checkpoint_path = os.path.join(LOGDIR, "model_1D.ckpt")
       
       filename = saver.save(sess, checkpoint_path)
       print("Model saved in file: %s" % filename)

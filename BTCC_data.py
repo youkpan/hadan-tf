@@ -37,7 +37,9 @@ def load_next_banch(start_index,banch_size):
   BTCC_pro_market_img = []
   global BTCC_pro_market_price
   BTCC_pro_market_price = []
-
+  global BTCC_pro_market_price_last
+  BTCC_pro_market_price_last =[]
+    
   signal_2 =0;
   signal_1 =0;
   signal_0 =0;
@@ -244,14 +246,14 @@ def load_next_banch(start_index,banch_size):
 #imgblank = ones((5,200,3), dtype=float)
 
 def get_data_img(i):
-  return BTCC_pro_market_img[i]
+  return BTCC_pro_market_price_last[i]
 
 def get_price(i):
   return BTCC_pro_market_price[i]
 
 def get_xdigit(i):
   return BTCC_pro_data[i]
-  
+
 def get_price_last(i):
   return BTCC_pro_market_price_last[i]
 
