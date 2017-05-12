@@ -145,11 +145,14 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
           if(loop_cnt == 50 and len(x_digit)>0):
             ys_list = []
             loop_cnt = 0
-            for j in range(0,50):
+            j = 0;
+            train_size = 50
+            train_batch = 1
+            while( j < train_size):
               #if(fabs(reward_list[j]-1)>0.002):
                 #learn_r = (fabs(reward_list[j])-1.0)*1000/20/50/6 #* (fabs(p_buy[0]-p_buy[1])*1000)
 
-                if(action == buy):
+                if(action_list[j] == buy):
                   x_digit_list[j][266] = 1.0
                   x_digit_list[j][267] = 0.0
                   
@@ -165,19 +168,33 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
                   else:
                     x_digit_list[j][266] = 1.0
                     x_digit_list[j][267] = 0.0
-                mutitimes = fabs(reward_list[j]-1)*1000 /20 #* (fabs(p_buy[0]-p_buy[1])*10)
+                mutitimes = fabs(reward_list[j]-1)*1000 /20  #* (fabs(p_buy[0]-p_buy[1])*10)
                 if(mutitimes >1): 
                   mutitimes = 1
+                
                 ys = [x_digit_list[j][266]*mutitimes,x_digit_list[j][267]*mutitimes]
                 #ys = [0,1]
                 ys_list.append(ys)
-                print(ys)
+                #print(ys)
                 #print(ys_list)
+                j+=1
 
-            learn_r = 0.0001
-            feed_dict = {model.x: dataimg_list,model.x_digit:x_digit_list, model.y_: ys_list, model.keep_prob: 0.95,learning_rate:learn_r}
-            _, l, predictions = sess.run(
-                [optimizer, loss, train_prediction], feed_dict=feed_dict)
+            dataimg_list2 = []
+            x_digit_list2 = []
+            ys_list2 = []
+            for i in range(0,train_size) :
+              if(ys_list[i][0]+ys_list[i][1] < 0.01):
+                continue
+              dataimg_list2.append(dataimg_list[i])
+              x_digit_list2.append(x_digit_list[i])
+              ys_list2.append(ys_list[i])
+
+            if(train_batch == 1 and len(x_digit_list2)>0):
+              learn_r = 0.0001
+              feed_dict = {model.x: dataimg_list2,model.x_digit:x_digit_list2, model.y_: ys_list2, model.keep_prob: 0.95,learning_rate:learn_r}
+              _, l, predictions = sess.run(
+                  [optimizer, loss, train_prediction], feed_dict=feed_dict)
+              print("training~ learn_r",learn_r)
 
             dataimg_list= []
             x_digit_list = []
@@ -206,7 +223,8 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
           #print(dataimg)
           p_buy = model.y.eval(feed_dict={model.x: [dataimg],model.x_digit: [x_digit], model.keep_prob: 1.0})[0]
 
-          print("eval out : ",p_buy," last action:",action_s," reward ",reward) 
+          if(ii%100 ==1):
+            print("eval out : ",p_buy," last action:",action_s," reward ",reward) 
 
           if( p_buy[0] > p_buy[1] ):
             start_cnt +=1
@@ -280,16 +298,16 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
         #plt.subplot(121) 
         #plt.subplot(111)
         start_i =ii-shownum
-        #sd=BTCC_pro_data[start_i:ii]
+        sd=BTCC_data.get_price_list()[0:shownum]
         #print(shape(sd))
         #print(shape(sd[0:120,5:6]))
-        #showdata1 = get_showdata(sd,5,shownum)
+        showdata1 = sd #get_showdata(sd,5,shownum)
         #showdata2 = get_showdata(sd,6,shownum)
         #showdata3 = get_showdata(sd,7,shownum)
         #showdata4 = get_showdata(sd,8,shownum)
         #showdata5 = get_showdata(sd,11,shownum)
 
-        #ax1.plot(x1,showdata1,x1,showdata5)#x1,showdata2,x1,showdata3,
+        ax1.plot(x1,showdata1)#x1,showdata2,x1,showdata3,
          # x1,showdata4,
 
         #plt.subplot(122) 
@@ -302,8 +320,6 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
         x4= range(0,len(p_buy_show))
         #plt.figure(2) 
         ax3.plot(x4,p_buy_show,'b')
-
-
         
         ax4 = fig.add_subplot(414)
         x5= range(0,len(op_action_show))
@@ -335,14 +351,15 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
   return {'profit':profit,'min_profit':min_profit,'buy_times':buy_times,
   'sell_times':sell_times,'score':score}
 
-idx = 0000
+judge_minu = 10
+idx = int(random.random()*judge_minu)
 for i in range(1,110):
 
   bench_size  = 10000
   BTCC_data.load_next_banch(idx,bench_size)
   idx += bench_size
   profit = calc_profit(buy_lost=0,sell_lost=0,money_init=10000,buy_once=10000,
-      sell_once=10000,buy_wait=1,sell_wait=1,sell_limit_diff=0,judge_minu=60,quick_move=10,slow_move=40)
+      sell_once=10000,buy_wait=1,sell_wait=1,sell_limit_diff=0,judge_minu=judge_minu,quick_move=10,slow_move=40)
 
   print(profit)
 

@@ -10,7 +10,6 @@ LOGDIR = './save'
 
 sess = tf.InteractiveSession()
 
-
 #loss = tf.reduce_mean(tf.square(tf.sub(model.y_, model.y)))
 #train_step = tf.train.AdamOptimizer(1e-4).minimize(loss)
 #hidden = tf.nn.relu(ys)
@@ -39,8 +38,9 @@ print("Model restore")
 #merged_summary_op = tf.merge_all_summaries()
 
 start_it = 0
-banch_size = 1000
+banch_size = 100
 loop_cnt = 20000
+predict_time = 10
 
 step_times = 200/banch_size
 
@@ -60,8 +60,8 @@ def tf_sgd_relu_nn2(sess1=0):
     sess =sess1
   last_loss=0
   loss_change_cnt = 0
-  learn_r = 0.001 
-  banch_i = 90000
+  learn_r = 0.0005
+  banch_i = 10000
   accuracy2 = 0
   BTCC_data.load_next_banch(banch_i,loop_cnt)
   key = ''
@@ -71,7 +71,7 @@ def tf_sgd_relu_nn2(sess1=0):
   #train over the dataset about 30 times
   for i in range(start_it,int(BTCC_data.num_images * 100)):
     train_batch_pointer = i*banch_size
-    xs,x_digit, ys,learn_r2 = BTCC_data.LoadTrainBatch(train_batch_pointer,banch_size)
+    xs,x_digit, ys,learn_r2 = BTCC_data.LoadTrainBatch(train_batch_pointer,banch_size,predict_time)
     
     #print("training: %d" % i)
     #train_step.run(feed_dict={model.x: xs, model.y_: ys, model.keep_prob: 0.5})
@@ -106,7 +106,7 @@ def tf_sgd_relu_nn2(sess1=0):
     
     if (i % (100*step_times) == 1) or (key == ord('t')):
       val_batch_pointer = i*banch_size
-      xs,x_digit, ys = BTCC_data.LoadValBatch(val_batch_pointer ,banch_size)
+      xs,x_digit, ys = BTCC_data.LoadValBatch(val_batch_pointer ,banch_size ,predict_time)
       mloss = loss.eval(feed_dict={model.x:xs,model.x_digit:x_digit, model.y_: ys, model.keep_prob: 1.0})
       print("step %d, val loss %g"%(i, mloss))
 
@@ -129,9 +129,10 @@ def tf_sgd_relu_nn2(sess1=0):
     '''
     if (i % (loop_cnt/banch_size) == (loop_cnt/banch_size)-1 or key == ord('n')):
       banch_i += loop_cnt
-      if(banch_i>115000):
+      max_cnt = BTCC_data.get_data_size()
+      if(banch_i>max_cnt):
         banch_i = 0
-      BTCC_data.load_next_banch(banch_i%115000,loop_cnt)
+      BTCC_data.load_next_banch(banch_i%max_cnt,loop_cnt)
 
     if (i % (200*step_times) == 100*step_times or (key == ord('s'))):
       print("saving model")

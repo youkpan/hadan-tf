@@ -39,6 +39,8 @@ def load_next_banch(start_index,banch_size):
   BTCC_pro_market_price = []
   global BTCC_pro_market_price_last
   BTCC_pro_market_price_last =[]
+  global BTCC_pro_market_ys
+  BTCC_pro_market_ys =[]
 
   signal_2 =0;
   signal_1 =0;
@@ -57,18 +59,14 @@ def load_next_banch(start_index,banch_size):
       if(ll< start_index):
         ll+=1
         continue
-      data = line.split('|')
+      data = line.split('|') 
+
       try:
         if(len(data[-2])==0):
           continue
       except Exception as e:
         continue
-        raise
-      else:
-        pass
-      finally:
-        pass
-
+      
       #print(len(data))
       #print(data)
       #print(data[2:268])
@@ -229,7 +227,7 @@ def load_next_banch(start_index,banch_size):
   print("finish read data")
   #get number of images
   num_images = len(xs)
-
+  BTCC_pro_market_ys = ys
   #shuffle list of images
   c = list(zip(xs, ys))
   random.shuffle(c)
@@ -257,12 +255,14 @@ def load_next_banch(start_index,banch_size):
 def get_data_img(i):
   return BTCC_pro_market_price_last[i]
 
-
 def get_data_img0(i):
   return BTCC_pro_market_img[i]
 
 def get_price(i):
   return BTCC_pro_market_price[i]
+
+def  get_price_list():
+  return BTCC_pro_market_price
 
 def get_xdigit(i):
   return BTCC_pro_data[i]
@@ -270,7 +270,10 @@ def get_xdigit(i):
 def get_price_last(i):
   return BTCC_pro_market_price_last[i]
 
-def LoadTrainBatch(train_batch_pointer,batch_size):
+def get_data_size():
+  return len(BTCC_pro_data)
+
+def LoadTrainBatch(train_batch_pointer,batch_size,predict_time):
     #global train_batch_pointer
     x_out = []
     x_digit = []
@@ -278,13 +281,17 @@ def LoadTrainBatch(train_batch_pointer,batch_size):
 
     for i in range(0, batch_size-1):
         img_index = train_xs[(train_batch_pointer + i) % num_train_images]
-        if img_index > len(BTCC_pro_market_img)-1:
-            img_index = len(BTCC_pro_market_img)-1
-        #print("img_index %d"% img_index )
+        if img_index > len(BTCC_pro_market_img)-predict_time:
+            img_index = len(BTCC_pro_market_img)-predict_time
 
-        x_out.append(get_data_img(img_index))
-        x_digit.append(BTCC_pro_data[img_index])
-        y_out.append(train_ys[(train_batch_pointer + i) % num_train_images])
+        try:
+          y_out.append(BTCC_pro_market_ys[img_index + predict_time])
+        except Exception as e:
+          continue
+        #print("img_index %d"% img_index )
+        x_out.append(get_price_last(img_index))
+        x_digit.append(get_xdigit(img_index))
+        
         learn_r = 0.001
     #return x_out, y_out
     #print("train pointer %d ,batch index %d ,img_index %d"% ( train_batch_pointer,((train_batch_pointer ) % num_train_images),img_index))
@@ -314,15 +321,21 @@ def LoadTrainBatch(train_batch_pointer,batch_size):
 
     return x_out,x_digit, y_out,learn_r
 
-def LoadValBatch(val_batch_pointer ,batch_size):
+def LoadValBatch(val_batch_pointer ,batch_size,predict_time):
     #global val_batch_pointer
     x_out = []
     y_out = []
     x_digit = []
     for i in range(0, batch_size):
         img_index = val_xs[(val_batch_pointer + i) % num_val_images]
-        x_digit.append(BTCC_pro_data[img_index])
-        x_out.append(get_data_img(img_index))#,imgblank,img_5,imgblank,img_10,imgblank,img_20)))
-        y_out.append(val_ys[(val_batch_pointer + i) % num_val_images])
+        try:
+          y_out.append(BTCC_pro_market_ys[img_index + predict_time])
+        except Exception as e:
+          continue
+
+        x_out.append(get_price_last(img_index))#,imgblank,img_5,imgblank,img_10,imgblank,img_20)))
+        x_digit.append(get_xdigit(img_index))
+        #y_out.append(val_ys[(val_batch_pointer + i) % num_val_images])
+        
     val_batch_pointer += batch_size
     return x_out,x_digit, y_out
