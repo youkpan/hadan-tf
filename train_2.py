@@ -130,7 +130,7 @@ def tf_sgd_relu_nn2(sess1=0):
       max_cnt = BTCC_data.get_data_size()
       if(banch_i>max_cnt):
         banch_i = 0
-      BTCC_data.load_next_banch(banch_i%max_cnt,loop_cnt)
+      BTCC_data.load_next_banch(banch_i%max_cnt,loop_cnt,predict_time)
 
     if (i % (200*step_times) == 100*step_times or (key == ord('s'))):
       print("saving model")

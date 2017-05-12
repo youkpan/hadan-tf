@@ -182,22 +182,22 @@ def load_next_banch(start_index,banch_size,predict_time):
       el
       '''
       rand = random.random()
-      win = 1.0
+      #win = 1.0
       loss = 0.0
-      if(rand<0.6):
-        win = 0.02*abs(data_predict)+0.5
-      if(rand<0.1):
-        win = 0.03*abs(data_predict)+0.5
-      if(rand>0.6):
-        win = 0.37 + 0.02*abs(data_predict)
-      if(rand>0.9):
-        win = 0.27 + 0.02*abs(data_predict)
+      #if(rand<0.6):
+      win = 0.02*abs(price-last_price)/price +0.5
+      #if(rand<0.1):
+      #  win = 0.03*abs(data_predict)+0.5
+      #if(rand>0.6):
+      #  win = 0.37 + 0.02*abs(data_predict)
+      #if(rand>0.9):
+      #  win = 0.27 + 0.02*abs(data_predict)
 
-      if(win>0.95):
-        win = 0.95
+      if(win>1):
+        win = 1
       loss = 1-win
 
-      if data_predict>0:
+      if diff>0:
         
         ys.append(np.array([win,loss]))
         signal_0 +=1

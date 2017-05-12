@@ -168,11 +168,23 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
                   else:
                     x_digit_list[j][266] = 1.0
                     x_digit_list[j][267] = 0.0
+
                 mutitimes = fabs(reward_list[j+1]-1)*1000 /20  #* (fabs(p_buy[0]-p_buy[1])*10)
-                if(mutitimes >1): 
-                  mutitimes = 1
-                
-                ys = [x_digit_list[j][266]*mutitimes,x_digit_list[j][267]*mutitimes]
+
+                if(x_digit_list[j][266]==1):
+                  win1 =  mutitimes + 0.5
+                  if(win1 >1.0): 
+                    win1 = 1.0
+                  loss1 = 1.0 - win1
+                else:
+                  loss1 =  mutitimes + 0.5
+                  if(loss1 >1.0): 
+                    loss1 = 1.0
+                  win1 = 1.0 - loss1
+
+                ys = [float(win1),float(loss1)]
+                #print('mutitimes ',mutitimes,'ys',ys)
+                #ys = [x_digit_list[j][266]*mutitimes,x_digit_list[j][267]*mutitimes]
                 #ys = [0,1]
                 ys_list.append(ys)
                 #print(ys)
@@ -184,7 +196,7 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
             ys_list2 = []
             reward_sum  =  0
             for i in range(0,train_size-1) :
-              if(ys_list[i][0]+ys_list[i][1] < 0.1 ):#or action_list[i]==0):
+              if(fabs(reward_list[i+1]-1) < 0.0015 ):#or action_list[i]==0):
                 continue
               dataimg_list2.append(dataimg_list[i])
               x_digit_list2.append(x_digit_list[i])
@@ -193,7 +205,7 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
               print("train : ",ys_list[i]," action:",action_list[i]," reward ",reward_list[i+1]) 
 
             if(train_batch == 1 and len(x_digit_list2)>0):
-              learn_r = 0.00005 + fabs(reward_sum / len(x_digit_list2)-1)/200
+              learn_r = 0.0007 + fabs(reward_sum / len(x_digit_list2)-1)/50
               feed_dict = {model.x: dataimg_list2,model.x_digit:x_digit_list2, model.y_: ys_list2, model.keep_prob: 1.0,learning_rate:learn_r}
               _, l, predictions = sess.run(
                   [optimizer, loss, train_prediction], feed_dict=feed_dict)
@@ -236,7 +248,7 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
             start_cnt -=1
             sell_cnt+=1
             
-          action = 0
+          #action = 0
           p_buy_show.append(p_buy[0])
           #or start_cnt< 0-sell_wait
           if (start_cnt<0-sell_wait  or (sell_limit_diff>0 and price < sell_limit)):
@@ -354,7 +366,7 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
   return {'profit':profit,'min_profit':min_profit,'buy_times':buy_times,
   'sell_times':sell_times,'score':score}
 
-judge_minu = 1
+judge_minu = 5
 idx = int(random.random()*judge_minu)
 for i in range(1,110):
 
