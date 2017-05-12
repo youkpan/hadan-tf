@@ -141,14 +141,14 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
 
           reward = price/last_price
           reward_list.append(reward)
-          
-          if(loop_cnt == 50 and len(x_digit)>0):
+          train_size = 20
+          if(loop_cnt == train_size and len(x_digit)>0):
             ys_list = []
             loop_cnt = 0
             j = 0;
-            train_size = 50
+            
             train_batch = 1
-            while( j < train_size):
+            while( j < train_size-1):
               #if(fabs(reward_list[j]-1)>0.002):
                 #learn_r = (fabs(reward_list[j])-1.0)*1000/20/50/6 #* (fabs(p_buy[0]-p_buy[1])*1000)
 
@@ -160,7 +160,7 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
                   x_digit_list[j][266] = 0.0
                   x_digit_list[j][267] = 1.0
                 
-                if (float(reward_list[j]) < 1.0):
+                if (float(reward_list[j+1]) < 1.0):
 
                   if(action_list[j] == buy):
                     x_digit_list[j][266] = 0.0
@@ -168,7 +168,7 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
                   else:
                     x_digit_list[j][266] = 1.0
                     x_digit_list[j][267] = 0.0
-                mutitimes = fabs(reward_list[j]-1)*1000 /20  #* (fabs(p_buy[0]-p_buy[1])*10)
+                mutitimes = fabs(reward_list[j+1]-1)*1000 /20  #* (fabs(p_buy[0]-p_buy[1])*10)
                 if(mutitimes >1): 
                   mutitimes = 1
                 
@@ -182,16 +182,19 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
             dataimg_list2 = []
             x_digit_list2 = []
             ys_list2 = []
-            for i in range(0,train_size) :
-              if(ys_list[i][0]+ys_list[i][1] < 0.01):
+            reward_sum  =  0
+            for i in range(0,train_size-1) :
+              if(ys_list[i][0]+ys_list[i][1] < 0.1 ):#or action_list[i]==0):
                 continue
               dataimg_list2.append(dataimg_list[i])
               x_digit_list2.append(x_digit_list[i])
               ys_list2.append(ys_list[i])
+              reward_sum += reward_list[i+1]
+              print("train : ",ys_list[i]," action:",action_list[i]," reward ",reward_list[i+1]) 
 
             if(train_batch == 1 and len(x_digit_list2)>0):
-              learn_r = 0.0001
-              feed_dict = {model.x: dataimg_list2,model.x_digit:x_digit_list2, model.y_: ys_list2, model.keep_prob: 0.95,learning_rate:learn_r}
+              learn_r = 0.00005 + fabs(reward_sum / len(x_digit_list2)-1)/200
+              feed_dict = {model.x: dataimg_list2,model.x_digit:x_digit_list2, model.y_: ys_list2, model.keep_prob: 1.0,learning_rate:learn_r}
               _, l, predictions = sess.run(
                   [optimizer, loss, train_prediction], feed_dict=feed_dict)
               print("training~ learn_r",learn_r)
@@ -223,7 +226,7 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
           #print(dataimg)
           p_buy = model.y.eval(feed_dict={model.x: [dataimg],model.x_digit: [x_digit], model.keep_prob: 1.0})[0]
 
-          if(ii%100 ==1):
+          if(int(ii/100)%2 ==1):
             print("eval out : ",p_buy," last action:",action_s," reward ",reward) 
 
           if( p_buy[0] > p_buy[1] ):
@@ -233,7 +236,7 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
             start_cnt -=1
             sell_cnt+=1
             
-
+          action = 0
           p_buy_show.append(p_buy[0])
           #or start_cnt< 0-sell_wait
           if (start_cnt<0-sell_wait  or (sell_limit_diff>0 and price < sell_limit)):
@@ -351,12 +354,12 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
   return {'profit':profit,'min_profit':min_profit,'buy_times':buy_times,
   'sell_times':sell_times,'score':score}
 
-judge_minu = 10
+judge_minu = 1
 idx = int(random.random()*judge_minu)
 for i in range(1,110):
 
   bench_size  = 10000
-  BTCC_data.load_next_banch(idx,bench_size)
+  BTCC_data.load_next_banch(idx,bench_size,judge_minu)
   idx += bench_size
   profit = calc_profit(buy_lost=0,sell_lost=0,money_init=10000,buy_once=10000,
       sell_once=10000,buy_wait=1,sell_wait=1,sell_limit_diff=0,judge_minu=judge_minu,quick_move=10,slow_move=40)

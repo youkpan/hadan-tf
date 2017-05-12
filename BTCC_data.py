@@ -15,7 +15,7 @@ global BTCC_pro_data
 global BTCC_pro_market_img
 global BTCC_pro_market_price
 
-def load_next_banch(start_index,banch_size):
+def load_next_banch(start_index,banch_size,predict_time):
 
   global num_images
 
@@ -163,7 +163,8 @@ def load_next_banch(start_index,banch_size):
       
       data_predict = float(data[-2])
       diff = (price-last_price)*1000/price
-      last_price = price
+      if(i%predict_time == predict_time-1):
+          last_price = price
       #print(data_predict)
       '''
       if diff>5:

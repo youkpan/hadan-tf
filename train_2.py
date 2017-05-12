@@ -38,9 +38,9 @@ print("Model restore")
 #merged_summary_op = tf.merge_all_summaries()
 
 start_it = 0
-banch_size = 100
+banch_size = 100  
 loop_cnt = 20000
-predict_time = 10
+predict_time = 5
 
 step_times = 200/banch_size
 
@@ -63,7 +63,7 @@ def tf_sgd_relu_nn2(sess1=0):
   learn_r = 0.0005
   banch_i = 10000
   accuracy2 = 0
-  BTCC_data.load_next_banch(banch_i,loop_cnt)
+  BTCC_data.load_next_banch(banch_i,loop_cnt,predict_time)
   key = ''
   #summary_writer = tf.train.SummaryWriter('tf_train', sess.graph)
   #tf.scalar_summary("accuracy", accuracy2)
@@ -75,7 +75,7 @@ def tf_sgd_relu_nn2(sess1=0):
     
     #print("training: %d" % i)
     #train_step.run(feed_dict={model.x: xs, model.y_: ys, model.keep_prob: 0.5})
-    feed_dict = {model.x: xs,model.x_digit:x_digit, model.y_: ys, model.keep_prob: 0.95,learning_rate:learn_r}
+    feed_dict = {model.x: xs,model.x_digit:x_digit, model.y_: ys, model.keep_prob: 0.999,learning_rate:learn_r}
     #{tf_train_dataset: batch_data, tf_train_labels: batch_labels}
     _, l, predictions = sess.run(
         [optimizer, loss, train_prediction], feed_dict=feed_dict)
@@ -112,8 +112,6 @@ def tf_sgd_relu_nn2(sess1=0):
 
       if (mloss < 0.02):
         checkpoint_path = os.path.join(LOGDIR, "%g-model_1D.ckpt"%mloss)
-        filename = saver.save(sess, checkpoint_path)
-        checkpoint_path = os.path.join(LOGDIR, "model_1D.ckpt")
         filename = saver.save(sess, checkpoint_path)
         print("Model saved in file: %s" % filename)
         break
