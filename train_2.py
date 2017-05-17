@@ -4,6 +4,7 @@ import scipy.misc
 import BTCC_data
 import model
 #import cv2
+import random
 import numpy as np
 
 LOGDIR = './save'
@@ -53,6 +54,7 @@ def accuracy(predictions, labels):
     return 100.0 * np.sum(np.argmax(predictions, 1) == np.argmax(labels, 1)) / predictions.shape[0]
 
 
+
 #save_pb(saver)
 def tf_sgd_relu_nn2(sess1=0):
   global sess
@@ -60,9 +62,10 @@ def tf_sgd_relu_nn2(sess1=0):
     sess =sess1
   last_loss=0
   loss_change_cnt = 0
-  learn_r = 0.0005
-  banch_i = 10000
+  learn_r = 0.00002
+  banch_i = 20000
   accuracy2 = 0
+  banch_i = int(random.random()*270000)
   BTCC_data.load_next_banch(banch_i,loop_cnt,predict_time)
   key = ''
   #summary_writer = tf.train.SummaryWriter('tf_train', sess.graph)
@@ -127,7 +130,8 @@ def tf_sgd_relu_nn2(sess1=0):
     '''
     if (i % (loop_cnt/banch_size) == (loop_cnt/banch_size)-1 or key == ord('n')):
       banch_i += loop_cnt
-      max_cnt = BTCC_data.get_data_size()
+      banch_i = int(random.random()*320000)
+      max_cnt = 360000 # BTCC_data.get_data_size()
       if(banch_i>max_cnt):
         banch_i = 0
       BTCC_data.load_next_banch(banch_i%max_cnt,loop_cnt,predict_time)

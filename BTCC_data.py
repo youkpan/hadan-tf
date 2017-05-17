@@ -82,6 +82,7 @@ def load_next_banch(start_index,banch_size,predict_time):
         if(j<120):
           val2+=val1
           data_v2.append (val2)
+        '''
         if(j<120):
           if(avg_line >=0):
             val1 = pow(avg_line,0.46)
@@ -92,9 +93,13 @@ def load_next_banch(start_index,banch_size,predict_time):
             val1 = pow(val1,0.46)
           else:
             val1 = -pow(-val1,0.46)
+        '''
         j+=1
         data_v.append (val1)
 
+      price = float(data[-4])
+      price_img = []
+      '''
       vol_bar = zeros((5,120), dtype=float)
 
       for x in range(0,120,10):
@@ -104,7 +109,7 @@ def load_next_banch(start_index,banch_size,predict_time):
         vol_bar[0][x] = vol_sum
         #print("vol_sum x:%d sum:%d"%(x,vol_sum))
 
-      price = float(data[-4])
+     
       if(last_price==0):
         last_price = price
       amount = data[-3]
@@ -149,6 +154,7 @@ def load_next_banch(start_index,banch_size,predict_time):
 
         last_pix_y = pix_y
 
+      '''
 
       #input_img = vstack((vol_bar,imgblank,data_bar,imgblank,hour_bar,
       #    imgblank,price_img))
@@ -163,8 +169,12 @@ def load_next_banch(start_index,banch_size,predict_time):
       
       data_predict = float(data[-2])
       diff = (price-last_price)*1000/price
-      if(i%predict_time == predict_time-1):
-          last_price = price
+      if i>=predict_time:
+        last_price = BTCC_pro_market_price[i-predict_time]
+      else:
+        last_price = price;
+      #if(i%predict_time == predict_time-1):
+      #    last_price = price
       #print(data_predict)
       '''
       if diff>5:
@@ -282,11 +292,11 @@ def LoadTrainBatch(train_batch_pointer,batch_size,predict_time):
 
     for i in range(0, batch_size-1):
         img_index = train_xs[(train_batch_pointer + i) % num_train_images]
-        if img_index > len(BTCC_pro_market_img)-predict_time:
-            img_index = len(BTCC_pro_market_img)-predict_time
+        #if img_index > len(BTCC_pro_market_img)-predict_time:
+        #    img_index = len(BTCC_pro_market_img)-predict_time
 
         try:
-          y_out.append(BTCC_pro_market_ys[img_index + predict_time])
+          y_out.append(BTCC_pro_market_ys[img_index ])
         except Exception as e:
           continue
         #print("img_index %d"% img_index )
@@ -330,7 +340,7 @@ def LoadValBatch(val_batch_pointer ,batch_size,predict_time):
     for i in range(0, batch_size):
         img_index = val_xs[(val_batch_pointer + i) % num_val_images]
         try:
-          y_out.append(BTCC_pro_market_ys[img_index + predict_time])
+          y_out.append(BTCC_pro_market_ys[img_index ])
         except Exception as e:
           continue
 
