@@ -272,7 +272,7 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
           buy_signal = p_buy[0] #0.9*p_buy[0] + 0.1*buy_signal
           sell_signal = p_buy[1] # 0.9*p_buy[1] + 0.1*sell_signal
 
-          if (sell_signal>buy_signal and sell_signal - buy_signal > abs(0.25*buy_signal) or (sell_limit_diff>0 and price < sell_limit)):
+          if (sell_signal>buy_signal and sell_signal - buy_signal >0.55 or (sell_limit_diff>0 and price < sell_limit)):
             if(mBTC>0):
               sBTC = 2*(sell_once*mBTC) # (1.0+2*(p_buy[1]-p_buy[0])/(abs(p_buy[0])+abs(p_buy[1]))) *(abs(buy_signal)+abs(sell_signal)
               if sBTC > 2.0*mBTC: 
@@ -284,7 +284,7 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
               sell_cnt = 0
               action = sell
             start_cnt =0
-          elif (sell_signal>buy_signal and sell_signal - buy_signal > abs(0.15*buy_signal)):
+          elif (sell_signal>buy_signal and sell_signal - buy_signal > 0.2):
             if(mBTC>0):
               sBTC = 1.0*(sell_once*mBTC)
               if sBTC > 2.0*mBTC:
@@ -297,7 +297,7 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
               action = sell
               start_cnt =0
 
-          if(buy_signal>sell_signal and buy_signal - sell_signal > abs(0.15*sell_signal) ): #2*
+          if(buy_signal>sell_signal and buy_signal - sell_signal > 0.2 ): #2*
             if(money>0):
               bmoney = buy_once*money
               if bmoney >2.0*money:
