@@ -115,6 +115,8 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
   loop_cnt = 0
   last_action = 0
   last_mmoney = 1 
+  buy_signal = 0
+  sell_signal = 0
 
   while (ii < datanum):
       op_action = 0
@@ -214,12 +216,13 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
               #print("train : ",ys_list[i]," action:",action_list[i]," reward ",reward_list[i+1]) 
 
             if(train_batch == 1 and len(x_digit_list2)>0):
-              learn_r = (0.00005 - ( mmoney / last_mmoney -1)/100 )*judge_minu #
+              learn_r = (0.00005 - ( mmoney / last_mmoney -1)/50*10/train_size )*judge_minu #
               last_mmoney =mmoney
               if learn_r> (0.0002*judge_minu):
                 learn_r = 0.0002*judge_minu
               if learn_r< (0.00001*judge_minu):
                 learn_r = 0.00001*judge_minu 
+              learn_r = learn_r *1.5
               feed_dict = {model.x: dataimg_list2,model.x_digit:x_digit_list2, model.y_: ys_list2, model.keep_prob: 1.0,learning_rate:learn_r}
               _, l, predictions = sess.run(
                   [optimizer, loss, train_prediction], feed_dict=feed_dict)
@@ -253,8 +256,8 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
           #print(dataimg)
           p_buy = model.y.eval(feed_dict={model.x: [dataimg],model.x_digit: [x_digit], model.keep_prob: 1.0})[0]
 
-          if(int(ii/100)%100 ==1):
-            print("eval out : ",p_buy," last action:",action_s," reward ",reward) 
+          #if(int(ii/10)%100 ==1):
+          #  print("eval out : ",p_buy," last action:",action_s," reward ",reward) 
 
           if( p_buy[0] > p_buy[1] ):
             start_cnt +=1
@@ -266,20 +269,35 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
           #action = 0
           p_buy_show.append(p_buy[0])
           #or start_cnt< 0-sell_wait
-          if (start_cnt<0-sell_wait  or (sell_limit_diff>0 and price < sell_limit)):
+          buy_signal = p_buy[0] #0.9*p_buy[0] + 0.1*buy_signal
+          sell_signal = p_buy[1] # 0.9*p_buy[1] + 0.1*sell_signal
+
+          if (sell_signal>buy_signal and (sell_signal - buy_signal)>0.37*(abs(buy_signal)+abs(sell_signal)) or (sell_limit_diff>0 and price < sell_limit)):
+            if(mBTC>0):
+              sBTC = 2*(sell_once*mBTC) # (1.0+2*(p_buy[1]-p_buy[0])/(abs(p_buy[0])+abs(p_buy[1])))
+              if sBTC > 2.0*mBTC: 
+                sBTC = 2.0*mBTC
+              money += sBTC*(price-sell_lost)
+              mBTC -= sBTC
+              sell_times +=1
+              op_action = -200
+              sell_cnt = 0
+              action = sell
+            start_cnt =0
+          elif (sell_signal-buy_signal>0.1*(abs(buy_signal)+abs(sell_signal)) ):
             if(mBTC>0):
               sBTC = 1.0*(sell_once*mBTC)
-              if sBTC > 1.0*mBTC:
-                sBTC = 1.0*mBTC
+              if sBTC > 2.0*mBTC:
+                sBTC = 2.0*mBTC
               money += sBTC*(price-sell_lost)
               mBTC -= sBTC
               sell_times +=1
               op_action = -100
               sell_cnt = 0
               action = sell
-            start_cnt =0
+              start_cnt =0
 
-          if(start_cnt>buy_wait):
+          if(buy_signal-sell_signal>0.1*(abs(buy_signal)+abs(sell_signal)) ): #2*
             if(money>0):
               bmoney = buy_once*money
               if bmoney >2.0*money:
@@ -293,13 +311,16 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
               sell_cnt = 0
               last_buy_price = price
             start_cnt = 0
+          
+
 
           action_list.append(action)
-          if(0 and last_action!=action):
-            print("x_digit ", x_digit)
+          if(  last_action!=action):
+            #print("x_digit ", x_digit)
             print("action ", action)
+            print(ii," eval out : ",p_buy," last action:",action_s," reward ",reward) 
             #imgplot = plt.imshow(BTCC_data.get_data_img0(ii))
-            plt.show()
+            #plt.show()
 
           last_action = action
 
@@ -389,19 +410,21 @@ def calc_profit(buy_lost,sell_lost,money_init,buy_once,sell_once,
   'sell_times':sell_times,'score':score}
 
 judge_minu = 5
-idx = int(random.random(1)*judge_minu)+int(random.random()*100000)
+idx = int(random.random(1)*judge_minu)+ int(random.random()*20000)
 for i in range(1,110):
 
   bench_size  = 10000
-
+  
   BTCC_data.load_next_banch(idx,bench_size,judge_minu)
   
   profit = calc_profit(buy_lost=0,sell_lost=0,money_init=10000,buy_once=1.0,
       sell_once=1.0,buy_wait=1,sell_wait=1,sell_limit_diff=0,judge_minu=judge_minu,quick_move=10,slow_move=40)
-  #profit = calc_profit(buy_lost=0,sell_lost=0,money_init=10000,buy_once=10000,
-  #    sell_once=10000,buy_wait=1,sell_wait=1,sell_limit_diff=0,judge_minu=judge_minu,quick_move=10,slow_move=40)
-  #profit = calc_profit(buy_lost=0,sell_lost=0,money_init=10000,buy_once=10000,
-  #    sell_once=10000,buy_wait=1,sell_wait=1,sell_limit_diff=0,judge_minu=judge_minu,quick_move=10,slow_move=40)
+  #@profit = calc_profit(buy_lost=0,sell_lost=0,money_init=10000,buy_once=1.0,
+  #    sell_once=1.0,buy_wait=1,sell_wait=1,sell_limit_diff=0,judge_minu=judge_minu,quick_move=10,slow_move=40)
+  #profit = calc_profit(buy_lost=0,sell_lost=0,money_init=10000,buy_once=1.0,
+  #    sell_once=1.0,buy_wait=1,sell_wait=1,sell_limit_diff=0,judge_minu=judge_minu,quick_move=10,slow_move=40)
+  #profit = calc_profit(buy_lost=0,sell_lost=0,money_init=10000,buy_once=1.0,
+  #    sell_once=1.0,buy_wait=1,sell_wait=1,sell_limit_diff=0,judge_minu=judge_minu,quick_move=10,slow_move=40)
 
   idx += bench_size
 
