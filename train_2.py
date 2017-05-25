@@ -19,7 +19,7 @@ sess = tf.InteractiveSession()
 learning_rate = tf.placeholder(tf.float32, shape=[])
 #loss = tf.reduce_mean(tf.square(tf.subtract(model.y_, model.y)))
 #loss = tf.reduce_mean((model.y_[0][0]- model.y[0][0]) **2 + (model.y_[0][1]- model.y[0][1])**2)
-loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits( logits= model.y,  labels= model.y_))
+loss = tf.reduce_sum( tf.abs(tf.subtract(model.y,   model.y_)))
 
 #loss_summary = tf.scalar_summary("loss", loss)
 
@@ -38,19 +38,22 @@ print("Model restore")
 
 #merged_summary_op = tf.merge_all_summaries()
 
-start_it = 0
-banch_size = 100  
-loop_cnt = 20000
-predict_time = 5
 
-step_times = 200/banch_size
+banch_size = 500
+loop_cnt = 5000
+predict_time = 5
+max_cnt = 170000 # BTCC_data.get_data_size()
+start_it = int(random.random()*20)+20
+step_times = 700/banch_size
 
 
 #img = scipy.misc.imread('steering_wheel_image.png', mode="RGB")
 #cv2.imshow("steering wheel", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
-
-
 def accuracy(predictions, labels):
+    return 100.0 * np.sum(np.argmax(predictions, 1) == np.argmax(labels, 1)) / predictions.shape[0]
+
+
+def accuracy0(predictions, labels):
     return 100.0 * np.sum(np.argmax(predictions, 1) == np.argmax(labels, 1)) / predictions.shape[0]
 
 
@@ -62,10 +65,10 @@ def tf_sgd_relu_nn2(sess1=0):
     sess =sess1
   last_loss=0
   loss_change_cnt = 0
-  learn_r = 0.00002
-  banch_i = 20000
+  learn_r = 0.001/banch_size
+  banch_i = 10000
   accuracy2 = 0
-  banch_i = int(random.random()*270000)
+  banch_i = int(random.random()*20000)
   BTCC_data.load_next_banch(banch_i,loop_cnt,predict_time)
   key = ''
   #summary_writer = tf.train.SummaryWriter('tf_train', sess.graph)
@@ -74,43 +77,48 @@ def tf_sgd_relu_nn2(sess1=0):
   #train over the dataset about 30 times
   for i in range(start_it,int(BTCC_data.num_images * 100)):
     train_batch_pointer = i*banch_size
-    xs,x_digit, ys,learn_r2 = BTCC_data.LoadTrainBatch(train_batch_pointer,banch_size,predict_time)
-    
+    xs,x_digit, ys,learn_r2,yl = BTCC_data.LoadTrainBatch(train_batch_pointer,banch_size,predict_time)
+    #print(x_digit[1:2].shape,xs[1:2].shape,ys[1:2].shape)
     #print("training: %d" % i)
     #train_step.run(feed_dict={model.x: xs, model.y_: ys, model.keep_prob: 0.5})
-    feed_dict = {model.x: xs,model.x_digit:x_digit, model.y_: ys, model.keep_prob: 0.999,learning_rate:learn_r}
+    feed_dict = {model.x: xs,model.x_digit:x_digit, model.y_: ys,model.yl: yl, model.keep_prob: 1.0,learning_rate:learn_r}
     #{tf_train_dataset: batch_data, tf_train_labels: batch_labels}
     _, l, predictions = sess.run(
         [optimizer, loss, train_prediction], feed_dict=feed_dict)
-
-    if last_loss ==0:
+    print(np.sum(ys[1]))
+    if last_loss ==0 and i>5:
       last_loss = l
     #key = cv2.waitKey(5)
+
+    last_loss = last_loss*0.9+0.1*l
+    
     if (i % (20*step_times) == 1) or (key == ord('t')):
       print("Minibatch loss at step %d: %f  loss_avg:%f" % (i, l,last_loss))
       accuracy2 = accuracy(predictions, ys)
       print("Minibatch accuracy: %.1f%%" % accuracy2)
-      
+      print("last_loss ",last_loss)
+      if (l<last_loss ):
+        last_loss = l
       if (l>last_loss ):
         loss_change_cnt +=1
         print("---loss not decress")
-        if (loss_change_cnt >3):
+        if (loss_change_cnt >2):
           loss_change_cnt = 0
           last_loss = l
           if learn_r > 0.00005:
             learn_r = 0.7*learn_r
             print("learn rate changed:%f"%learn_r)
-      else:
-        last_loss = last_loss*0.95+0.05*l
-        if loss_change_cnt>1:
-          loss_change_cnt -=1
+    #else:
+    #  last_loss = last_loss*0.95+0.05*l
+      #if loss_change_cnt>1:
+       # loss_change_cnt -=1
         
     #print("step run over")
     
-    if (i % (100*step_times) == 1) or (key == ord('t')):
+    if (i % (10*step_times) == 1) or (key == ord('t')):
       val_batch_pointer = i*banch_size
-      xs,x_digit, ys = BTCC_data.LoadValBatch(val_batch_pointer ,banch_size ,predict_time)
-      mloss = loss.eval(feed_dict={model.x:xs,model.x_digit:x_digit, model.y_: ys, model.keep_prob: 1.0})
+      xs,x_digit, ys,yl = BTCC_data.LoadValBatch(val_batch_pointer ,banch_size ,predict_time)
+      mloss = loss.eval(feed_dict={model.x:xs,model.x_digit:x_digit, model.y_: ys,model.yl: yl,model.keep_prob: 1.0})
       print("step %d, val loss %g"%(i, mloss))
 
       if (mloss < 0.02):
@@ -128,10 +136,10 @@ def tf_sgd_relu_nn2(sess1=0):
       summary_writer.add_summary(summary_str, i)
       print("log saved in file: tf_train" )
     '''
-    if (i % (loop_cnt/banch_size) == (loop_cnt/banch_size)-1 or key == ord('n')):
+    if (i % (2*loop_cnt/banch_size) == (2*loop_cnt/banch_size)-1 or key == ord('n')):
       banch_i += loop_cnt
-      banch_i = int(random.random()*320000)
-      max_cnt = 360000 # BTCC_data.get_data_size()
+      #banch_i = int(random.random()*max_cnt)
+      
       if(banch_i>max_cnt):
         banch_i = 0
       BTCC_data.load_next_banch(banch_i%max_cnt,loop_cnt,predict_time)

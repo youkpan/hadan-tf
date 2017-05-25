@@ -3,10 +3,10 @@ import scipy
 import scipy.misc
 from numpy  import *
 
-n_input = 120 
-n_classes = 2 
+n_input = 256 
+n_classes = 256*12 
 
-mshape = 268 # (28+24+24+120)*2+24+7+31+12+2
+mshape = 256*12*3 # (28+24+24+120)*2+24+7+31+12+2
 
 
 _weights = {
@@ -19,9 +19,9 @@ _weights = {
     'wc31': tf.Variable(tf.random_normal([1, 192, 96])),
     'wc32': tf.Variable(tf.random_normal([3, 192, 96])),
     'wc33': tf.Variable(tf.random_normal([5, 192, 96])),
-    'wd1': tf.Variable(tf.random_normal([96*100 , 160])),
-    'wd2': tf.Variable(tf.random_normal([160, 20])),
-    'out': tf.Variable(tf.random_normal([1024, 3]))
+    'wd1': tf.Variable(tf.random_normal([n_input , 5000])),
+    'wd2': tf.Variable(tf.random_normal([5000, n_classes])),
+    'out': tf.Variable(tf.random_normal([n_classes, n_classes]))
 }
 _biases = {
     'bc11': tf.Variable(tf.random_normal([32])),
@@ -34,15 +34,15 @@ _biases = {
     'bc32': tf.Variable(tf.random_normal([96])),
     'bc33': tf.Variable(tf.random_normal([96])),
 
-    'bd1': tf.Variable(tf.random_normal([160])),
-    'bd2': tf.Variable(tf.random_normal([20])),
+    'bd1': tf.Variable(tf.random_normal([5000])),
+    'bd2': tf.Variable(tf.random_normal([n_classes])),
     'out': tf.Variable(tf.random_normal([n_classes]))
 }
-
 
 x = tf.placeholder(tf.float32, shape=[None, n_input])
 x_digit = tf.placeholder(tf.float32, shape=[None, mshape])
 y_ = tf.placeholder(tf.float32, shape=[None, n_classes])
+yl = tf.placeholder(tf.float32, shape=[None, n_classes])
 
 keep_prob = tf.placeholder(tf.float32)
 
@@ -69,11 +69,13 @@ def norm(name, l_input, lsize=4):
 
 
 def weight_variable(shape,name):
-  initial = tf.truncated_normal(shape, stddev=0.1)
+  initial = tf.constant(0.00, shape=shape) #tf.truncated_normal(shape, stddev=0.1) #
+  #initial = tf.random_normal(shape)
   return tf.Variable(initial,name=name)
 
 def bias_variable(shape,name):
-  initial = tf.constant(0.1, shape=shape)
+  #initial = tf.random_normal(shape)
+  initial = tf.constant(0.0, shape=shape)
   return tf.Variable(initial,name=name)
 
 
@@ -98,19 +100,19 @@ def variable_summaries(var, name):
 #variable_summaries(x,"placeholder_x")
 #variable_summaries(y_,"placeholder_y")
 
-_X = tf.reshape(x, shape=[-1, n_input, 1])
+#_X = tf.reshape(x, shape=[-1, n_input, 1])
 
 #  6x6 s 3
-conv11 = conv1d2('conv11', _X, _weights['wc11'], _biases['bc11'],1)
-conv12 = conv1d2('conv12', _X, _weights['wc12'], _biases['bc12'],1)
-conv13 = conv1d2('conv13', _X, _weights['wc13'], _biases['bc13'],2)
+#conv11 = conv1d2('conv11', _X, _weights['wc11'], _biases['bc11'],1)
+#conv12 = conv1d2('conv12', _X, _weights['wc12'], _biases['bc12'],1)
+#conv13 = conv1d2('conv13', _X, _weights['wc13'], _biases['bc13'],2)
 #  60x60+
 #pool1 = max_pool('pool1', conv1, k=2)
 # 
 #norm1 = norm('norm1', conv1, lsize=4)
 # Dropout
 #norm1 = tf.nn.dropout(conv1, keep_prob)
-concatv1 = tf.reshape(tf.concat( [conv11, conv12,conv13] ,1), shape=[-1,1,96])
+#concatv1 = tf.reshape(tf.concat( [conv11, conv12,conv13] ,1), shape=[-1,1,96])
 '''
 # 
 conv21 = conv1d2('conv21', concatv1, _weights['wc21'], _biases['bc21'],1)
@@ -134,44 +136,58 @@ conv33 = conv1d2('conv33', concatv2, _weights['wc33'], _biases['bc33'],2)
 # 
 #norm3 = norm('norm3', pool3, lsize=4)
 # Dropout
-#norm3 = tf.nn.dropout(conv3, keep_prob)
+#
 concatv3 = tf.reshape(tf.concat( [conv31, conv32,conv33] ,1), shape=[-1,288])
 # 
 '''
-dense1 = tf.reshape(concatv1, [-1, _weights['wd1'].get_shape().as_list()[0]]) 
-dense1 = prelu(tf.matmul(dense1, _weights['wd1']) + _biases['bd1'], name='fc1') 
-# 
+xin = tf.nn.dropout(x, keep_prob)
 
-# 
-#out = tf.matmul(dense2, _weights['out']) + _biases['out']
 
-#start digital
-W_fc2 = weight_variable([mshape, 100],name='W_fc2')
-b_fc2 = bias_variable([100],name='b_fc2')
+#concat = tf.reshape(tf.concat( [xin, x_digit] ,1), shape=[-1,n_input+mshape])
+
+W_fc2 = weight_variable([mshape, 5000],name='W_fc2')
+b_fc2 = bias_variable([5000],name='b_fc2')
 
 h_fc2 = prelu(tf.nn.bias_add(tf.matmul(x_digit, W_fc2) , b_fc2))
 
 h_fc2_drop = tf.nn.dropout(h_fc2, keep_prob)
 
-#dense2 = prelu(tf.matmul(dense1, _weights['wd2']) + _biases['bd2'], name='fc2') # Relu activation
-#print("dense1:  shape  \n",dense1.get_shape(),tf.shape(dense1))
-#print("h_fc2_drop:  shape  \n",h_fc2_drop.get_shape(),tf.shape(h_fc2_drop))
-#out = vstack ((dense2,h_fc3_drop))
-concat = tf.reshape(tf.concat( [dense1, h_fc2_drop] ,1), shape=[-1,160+100])
 
-W_fc3 = weight_variable([260, 512],name='W_fc3')
-b_fc3 = bias_variable([512],name='b_fc3')
+W_fc3 = weight_variable([5000, n_classes],name='W_fc3')
+b_fc3 = bias_variable([ n_classes],name='b_fc3')
 
-h_fc3 = prelu(tf.nn.bias_add(tf.matmul(concat, W_fc3) , b_fc3))
+h_fc3 = prelu(tf.nn.bias_add(tf.matmul(h_fc2_drop, W_fc3) , b_fc3))
 
 h_fc3_drop = tf.nn.dropout(h_fc3, keep_prob)
 
-W_fc5 = weight_variable([512, 512],name='W_fc5')
-b_fc5 = bias_variable([512],name='b_fc5')
+W_fc4 = weight_variable([n_classes, n_classes],name='W_fc4')
+b_fc4 = bias_variable([ n_classes],name='b_fc4')
 
-h_fc5 = prelu(tf.nn.bias_add(tf.matmul(h_fc3_drop, W_fc5) , b_fc5))
+h_fc4 = prelu(tf.nn.bias_add(tf.matmul(h_fc3_drop, W_fc4) , b_fc4))
+
+h_fc4_drop = tf.nn.dropout(h_fc4, keep_prob)
+
+W_fc5 = weight_variable([n_classes, n_classes],name='W_fc5')
+b_fc5 = bias_variable([ n_classes],name='b_fc5')
+
+h_fc5 = prelu(tf.nn.bias_add(tf.matmul(h_fc4_drop, W_fc5) , b_fc5))
 
 h_fc5_drop = tf.nn.dropout(h_fc5, keep_prob)
+
+W_fc6 = weight_variable([n_classes, n_classes],name='W_fc6')
+b_fc6 = bias_variable([ n_classes],name='b_fc6')
+
+h_fc6 = prelu(tf.nn.bias_add(tf.matmul(h_fc5_drop, W_fc6) , b_fc6))
+
+h_fc6_drop = tf.nn.dropout(h_fc6, keep_prob)
+
+
+W_fc7 = weight_variable([ n_classes,  n_classes],name='W_fc7')
+b_fc7 = bias_variable([ n_classes],name='b_fc7')
+
+y = tf.nn.bias_add(tf.matmul(h_fc6_drop, W_fc7) , b_fc7)
+
+#y= tf.add(y1,yl)
 
 #W_fc6 = weight_variable([512, 128],name='W_fc6')
 #b_fc6 = bias_variable([128],name='b_fc6')
@@ -180,18 +196,18 @@ h_fc5_drop = tf.nn.dropout(h_fc5, keep_prob)
 
 #h_fc6_drop = tf.nn.dropout(h_fc6, keep_prob)
 
-W_fc4 = weight_variable([512, n_classes],name='W_fc4')
-b_fc4 = bias_variable([n_classes],name='b_fc4')
+#W_fc4 = weight_variable([512, n_classes],name='W_fc4')
+#b_fc4 = bias_variable([n_classes],name='b_fc4')
 
-h_fc4 = tf.nn.bias_add(tf.matmul(h_fc3_drop, W_fc4) , b_fc4)
+#h_fc4 = tf.nn.bias_add(tf.matmul(h_fc3_drop, W_fc4) , b_fc4)
 
 #end digital
 
-W_add = bias_variable([1],name='W_add')
+#W_add = bias_variable([1],name='W_add')
 #tf.histogram_summary('W_add', W_add)
 
 #with tf.name_scope('Layer2'):
-y=h_fc4 #h_fc4*(1-W_add)+(out*W_add)
+#y=h_fc4 #h_fc4*(1-W_add)+(out*W_add)
   #y=tf.add(tf.matmul(h_fc4,1-W_add),tf.matmul(h_fc4,W_add))
 
 
