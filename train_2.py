@@ -33,14 +33,14 @@ sess.run(tf.global_variables_initializer())
 #self.init = tf.initialize_variables(tf.all_variables(), name="nInit")
 
 saver = tf.train.Saver()
-saver.restore(sess,LOGDIR+"/model_1D.ckpt")
+saver.restore(sess,LOGDIR+"/model_1D2.ckpt")
 print("Model restore") 
 
 #merged_summary_op = tf.merge_all_summaries()
 
 
-banch_size = 500
-loop_cnt = 5000
+banch_size = 2
+loop_cnt = 1000
 predict_time = 5
 max_cnt = 170000 # BTCC_data.get_data_size()
 start_it = int(random.random()*20)+20
@@ -75,25 +75,25 @@ def tf_sgd_relu_nn2(sess1=0):
   #tf.scalar_summary("accuracy", accuracy2)
 
   #train over the dataset about 30 times
-  for i in range(start_it,int(BTCC_data.num_images * 100)):
+  for i in range(start_it,int(BTCC_data.num_images * 10000000000)):
     train_batch_pointer = i*banch_size
     xs,x_digit, ys,learn_r2,yl = BTCC_data.LoadTrainBatch(train_batch_pointer,banch_size,predict_time)
     #print(x_digit[1:2].shape,xs[1:2].shape,ys[1:2].shape)
     #print("training: %d" % i)
     #train_step.run(feed_dict={model.x: xs, model.y_: ys, model.keep_prob: 0.5})
-    feed_dict = {model.x: xs,model.x_digit:x_digit, model.y_: ys,model.yl: yl, model.keep_prob: 1.0,learning_rate:learn_r}
+    feed_dict = {model.x: xs,model.x_digit:x_digit, model.y_: ys,model.yl: yl, model.keep_prob: 0.7,learning_rate:learn_r}
     #{tf_train_dataset: batch_data, tf_train_labels: batch_labels}
     _, l, predictions = sess.run(
         [optimizer, loss, train_prediction], feed_dict=feed_dict)
-    print(np.sum(ys[1]))
+    #print(np.sum(ys[1]))
     if last_loss ==0 and i>5:
       last_loss = l
     #key = cv2.waitKey(5)
 
     last_loss = last_loss*0.9+0.1*l
-    
+    print("Minibatch loss at step %d: %f  loss_avg:%f" % (i, l,last_loss))
     if (i % (20*step_times) == 1) or (key == ord('t')):
-      print("Minibatch loss at step %d: %f  loss_avg:%f" % (i, l,last_loss))
+      
       accuracy2 = accuracy(predictions, ys)
       print("Minibatch accuracy: %.1f%%" % accuracy2)
       print("last_loss ",last_loss)
@@ -122,7 +122,7 @@ def tf_sgd_relu_nn2(sess1=0):
       print("step %d, val loss %g"%(i, mloss))
 
       if (mloss < 0.02):
-        checkpoint_path = os.path.join(LOGDIR, "%g-model_1D.ckpt"%mloss)
+        checkpoint_path = os.path.join(LOGDIR, "%g-model_1D2.ckpt"%mloss)
         filename = saver.save(sess, checkpoint_path)
         print("Model saved in file: %s" % filename)
         break
@@ -148,7 +148,7 @@ def tf_sgd_relu_nn2(sess1=0):
       print("saving model")
       if not os.path.exists(LOGDIR):
               os.makedirs(LOGDIR)
-      checkpoint_path = os.path.join(LOGDIR, "model_1D.ckpt")
+      checkpoint_path = os.path.join(LOGDIR, "model_1D2.ckpt")
       
       filename = saver.save(sess, checkpoint_path)
       print("Model saved in file: %s" % filename)

@@ -17,6 +17,14 @@ global BTCC_pro_market_price
 global num_train_images
 global num_val_images
 
+
+def check_contain_chinese(check_str):
+    for ch in check_str.decode('utf-8'):
+        if u'\u4e00' <= ch <= u'\u9fff':
+            return True
+    return False
+
+    
 def load_next_banch(start_index,banch_size,predict_time):
 
   global num_images
@@ -84,7 +92,7 @@ def load_next_banch(start_index,banch_size,predict_time):
       if(str(head)[-2]!="n"):
         head = f.read(1)
         #print(str(head))
-
+      sentence = f.read(256)
       try:
         if(len(str(head))==0):
           print('break')
@@ -202,16 +210,19 @@ def LoadTrainBatch(train_batch_pointer,batch_size,predict_time):
         input_dialog = np.concatenate((data_buf1,data_buf2,data_buf3))
         #print(input_dialog.shape)
         y = get_xdigit(img_index)
-        yy = np.zeros(256)
-        for tt in range(0,12):
+        #print(y.shape)
+        yy = zeros(12*256, dtype=float)
+        for tt in range(0,10):
           for j in range(0,256):
-            yy[tt] +=  y[j]
+            ii  = int(tt/2)
+            yy[ii*256+j] +=  (y[tt*256+j]+y[(tt+1)*256+j])/2
+
         '''
         print("SUM:")
         print(np.sum(y))
         print(np.sum(yy))
         '''
-        y_out.append(y)
+        y_out.append(yy)
         data_mean = (data_buf1+data_buf2+data_buf3)/3
         #print (data_mean)
         y_last_out.append(data_mean)
@@ -233,7 +244,7 @@ def LoadTrainBatch(train_batch_pointer,batch_size,predict_time):
         plt.show()
         '''
         
-        learn_r = 0.001
+        #learn_r = 0.001
     #return x_out, y_out
     #print("train pointer %d ,batch index %d ,img_index %d"% ( train_batch_pointer,((train_batch_pointer ) % num_train_images),img_index))
     '''
@@ -260,7 +271,7 @@ def LoadTrainBatch(train_batch_pointer,batch_size,predict_time):
 	#   continue
 
 
-    return x_out,x_digit, y_out,learn_r , y_last_out
+    return x_out,x_digit, y_out,0.001 , y_last_out
 
 def LoadValBatch(val_batch_pointer ,batch_size,predict_time):
     #global val_batch_pointer
@@ -280,13 +291,13 @@ def LoadValBatch(val_batch_pointer ,batch_size,predict_time):
         input_dialog = np.concatenate((data_buf1,data_buf2,data_buf3))
         
         y = get_xdigit(img_index)
-        yy = np.zeros(256)
-        for tt in range(0,12):
+        yy = zeros(12*256, dtype=float)
+        for tt in range(0,10):
           for j in range(0,256):
-            yy[tt] +=  y[j]
+            ii  = int(tt/3)
+            yy[ii*256+j] +=  (y[tt*256+j]+y[(tt+1)*256+j]+y[(tt+2)*256+j])/3
 
-
-        y_out.append(y)
+        y_out.append(yy)
         data_mean = (data_buf1+data_buf2+data_buf3)/3
         y_last_out.append(data_mean)
         #print("img_index %d"% img_index )

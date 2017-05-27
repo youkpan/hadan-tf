@@ -5,9 +5,9 @@ from numpy  import *
 
 n_input = 256 
 n_classes = 256*12 
-n_vocab = 6204
+
 mshape = 256*12*3 # (28+24+24+120)*2+24+7+31+12+2
-word_len = 20
+
 
 _weights = {
     'wc11': tf.Variable(tf.random_normal([1, 1, 32])),
@@ -43,8 +43,6 @@ x = tf.placeholder(tf.float32, shape=[None, n_input])
 x_digit = tf.placeholder(tf.float32, shape=[None, mshape])
 y_ = tf.placeholder(tf.float32, shape=[None, n_classes])
 yl = tf.placeholder(tf.float32, shape=[None, n_classes])
-#Wab = tf.placeholder(tf.float32, shape=[None, word_len])
-#Vector_Word = tf.placeholder(tf.float32, shape=[None, n_vocab])
 
 keep_prob = tf.placeholder(tf.float32)
 
@@ -143,87 +141,16 @@ concatv3 = tf.reshape(tf.concat( [conv31, conv32,conv33] ,1), shape=[-1,288])
 # 
 '''
 xin = tf.nn.dropout(x, keep_prob)
-#word  contrl weight
-#WWc = weight_variable([6204],name='W_c')
-
-#WWc = weight_variable([6204],name='W_c')
-
-#ids = tf.constant([0,1,2,3])
-#tf.nn.embedding_lookup(WWc,ids)
-
-#W12=tf.reshape(Wab, shape=[-1,12])
-print(x_digit.shape)
-Vector_Word =tf.reshape(x_digit, shape=[-1,256])
-print(Vector_Word.shape)
-
-S1 = tf.gather(Vector_Word, 0)
-
-def word_loop(idx,Wc,S1): 
-  W1 = tf.gather(Vector_Word, idx)
-  W2 = tf.gather(Vector_Word, idx+1)
-  #print(W1.shape)
-  
-  W12 =  tf.reduce_sum( tf.abs(tf.subtract(W2 , W1)))/3072
-  #print(W12.shape)
-  #W12 = tf.reshape(W12,shape=[256,1])
-  #W12 =  tf.matmul(W1,W12)
-  S2 =  (S1 + W1*W12)*  Wc   + W2
-  return S2
-
-S1=tf.gather(Vector_Word, 0)
-S2 = word_loop(0,0.07,S1)
-S3 = word_loop(1,0.07,S2)
-S4 = word_loop(2,0.07,S3)
-S5 = word_loop(3,0.07,S4)
-S6 = word_loop(4,0.07,S5)
-S7 = word_loop(5,0.07,S6)
-S8 = word_loop(6,0.07,S7)
-S9 = word_loop(7,0.07,S8)
-S10= word_loop(8,0.07,S9)
-S11= word_loop(9,0.07,S10)
-S12= word_loop(10,0.07,S11)
 
 
-SS1=tf.gather(Vector_Word, 11)
-SS2 = word_loop(12,0.07,SS1)
-SS3 = word_loop(13,0.07,SS2)
-SS4 = word_loop(14,0.07,SS3)
-SS5 = word_loop(15,0.07,SS4)
-SS6 = word_loop(16,0.07,SS5)
-SS7 = word_loop(17,0.07,SS6)
-SS8 = word_loop(18,0.07,SS7)
-SS9 = word_loop(19,0.07,SS8)
-SS10= word_loop(20,0.07,SS9)
-SS11= word_loop(21,0.07,SS10)
-SS12= word_loop(22,0.07,SS11)
+#concat = tf.reshape(tf.concat( [xin, x_digit] ,1), shape=[-1,n_input+mshape])
 
-
-SSS1=tf.gather(Vector_Word, 23)
-SSS2 = word_loop(24,0.07,SSS1)
-SSS3 = word_loop(25,0.07,SSS2)
-SSS4 = word_loop(26,0.07,SSS3)
-SSS5 = word_loop(27,0.07,SSS4)
-SSS6 = word_loop(28,0.07,SSS5)
-SSS7 = word_loop(29,0.07,SSS6)
-SSS8 = word_loop(30,0.07,SSS7)
-SSS9 = word_loop(31,0.07,SSS8)
-SSS10= word_loop(32,0.07,SSS9)
-SSS11= word_loop(33,0.07,SSS10)
-SSS12= word_loop(34,0.07,SSS11)
-
-concat = tf.reshape( [S1, S2,S3,S4,S5,S6,S7,S8,S9,S10,S11,S12,
-  SS1, SS2,SS3,SS4,SS5,SS6,SS7,SS8,SS9,SS10,SS11,SS12,SSS1, 
-    SSS2,SSS3,SSS4,SSS5,SSS6,SSS7,SSS8,SSS9,SSS10,SSS11,SSS12 ] , shape=[-1,n_input*36])
-
-#print(concat.shape)
-
-W_fc2 = weight_variable([n_input*36, 5000],name='W_fc2')
+W_fc2 = weight_variable([mshape, 5000],name='W_fc2')
 b_fc2 = bias_variable([5000],name='b_fc2')
 
-h_fc2 = prelu(tf.nn.bias_add(tf.matmul(concat, W_fc2) , b_fc2))
+h_fc2 = prelu(tf.nn.bias_add(tf.matmul(x_digit, W_fc2) , b_fc2))
 
 h_fc2_drop = tf.nn.dropout(h_fc2, keep_prob)
-  
 
 
 W_fc3 = weight_variable([5000, n_classes],name='W_fc3')
@@ -233,29 +160,29 @@ h_fc3 = prelu(tf.nn.bias_add(tf.matmul(h_fc2_drop, W_fc3) , b_fc3))
 
 h_fc3_drop = tf.nn.dropout(h_fc3, keep_prob)
 
-W_fc4 = weight_variable([n_classes, 5000],name='W_fc4')
-b_fc4 = bias_variable([ 5000],name='b_fc4')
+W_fc4 = weight_variable([n_classes, n_classes],name='W_fc4')
+b_fc4 = bias_variable([ n_classes],name='b_fc4')
 
 h_fc4 = prelu(tf.nn.bias_add(tf.matmul(h_fc3_drop, W_fc4) , b_fc4))
 
 h_fc4_drop = tf.nn.dropout(h_fc4, keep_prob)
 
-W_fc5 = weight_variable([5000, n_classes],name='W_fc5')
+W_fc5 = weight_variable([n_classes, n_classes],name='W_fc5')
 b_fc5 = bias_variable([ n_classes],name='b_fc5')
 
 h_fc5 = prelu(tf.nn.bias_add(tf.matmul(h_fc4_drop, W_fc5) , b_fc5))
 
 h_fc5_drop = tf.nn.dropout(h_fc5, keep_prob)
 
-W_fc6 = weight_variable([n_classes, 5000],name='W_fc6')
-b_fc6 = bias_variable([ 5000],name='b_fc6')
+W_fc6 = weight_variable([n_classes, n_classes],name='W_fc6')
+b_fc6 = bias_variable([ n_classes],name='b_fc6')
 
 h_fc6 = prelu(tf.nn.bias_add(tf.matmul(h_fc5_drop, W_fc6) , b_fc6))
 
 h_fc6_drop = tf.nn.dropout(h_fc6, keep_prob)
 
 
-W_fc7 = weight_variable([ 5000,  n_classes],name='W_fc7')
+W_fc7 = weight_variable([ n_classes,  n_classes],name='W_fc7')
 b_fc7 = bias_variable([ n_classes],name='b_fc7')
 
 y = tf.nn.bias_add(tf.matmul(h_fc6_drop, W_fc7) , b_fc7)
