@@ -152,9 +152,13 @@ xin = tf.nn.dropout(x, keep_prob)
 #tf.nn.embedding_lookup(WWc,ids)
 
 #W12=tf.reshape(Wab, shape=[-1,12])
-print(x_digit.shape)
+#print(x_digit.shape)
 Vector_Word =tf.reshape(x_digit, shape=[-1,256])
-print(Vector_Word.shape)
+Word_mark = tf.placeholder(tf.float32, shape=[None,36])
+Word_mark_w = weight_variable([1],name='W_m')
+Word_mark_b = bias_variable([1],name='W_b')
+Word_mark_t = tf.reshape(Word_mark,shape=[-1,1])
+#print(Vector_Word.shape)
 
 S1 = tf.gather(Vector_Word, 0)
 
@@ -167,7 +171,9 @@ def word_loop(idx,Wc,S1):
   #print(W12.shape)
   #W12 = tf.reshape(W12,shape=[256,1])
   #W12 =  tf.matmul(W1,W12)
-  S2 =  (S1 + W1*W12)*  Wc   + W2
+  mark_i = Word_mark_w*tf.gather(Word_mark_t, idx+1)+Word_mark_b
+
+  S2 =  mark_i*(S1 + W1*W12)*  Wc   + W2
   return S2
 
 S1=tf.gather(Vector_Word, 0)

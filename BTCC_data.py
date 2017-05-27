@@ -12,19 +12,38 @@ import tensorflow as tf
 num_images=0
 
 global BTCC_pro_data
-global BTCC_pro_market_img
+global sentence_line_mark
 global BTCC_pro_market_price
 global num_train_images
 global num_val_images
 
+dict_index = {}
+dict_vector = []
+with open("/home/pan/fairseq/dict_string", "rb") as f:
+  dict_string = str(f.read(100000).decode('utf-8'))
+  dict2=dict_string.split(" ")
+  for k in range(0,len(dict2)):
+    dict_index[dict2[k]] = k
 
-def check_contain_chinese(check_str):
-    for ch in check_str.decode('utf-8'):
-        if u'\u4e00' <= ch <= u'\u9fff':
-            return True
-    return False
+  #print("dict_index",dict_index)
 
-    
+with open("/home/pan/fairseq/dict_vector", "rb") as f:
+  dict_vector_t = f.read(256)
+  while(dict_vector_t):
+    word_v = np.zeros(256)
+    k=0
+    for d in dict_vector_t:
+      word_v[k] = (float(d))
+      k= k +1
+    #print(word_v) 
+    dict_vector.append(word_v)
+    #print(dict_vector_t)
+    dict_vector_t = f.read(256)
+
+#print(len(dict_vector))
+#print(dict_vector[1])
+
+
 def load_next_banch(start_index,banch_size,predict_time):
 
   global num_images
@@ -36,21 +55,22 @@ def load_next_banch(start_index,banch_size,predict_time):
   train_batch_pointer = 0
   val_batch_pointer = 0
 
-  
-
   #start_index = 68000
 
   filename = []
   global BTCC_pro_data 
   BTCC_pro_data = []
-  global BTCC_pro_market_img
-  BTCC_pro_market_img = []
+  global sentence_line_mark
+  sentence_line_mark = []
   global BTCC_pro_market_price
   BTCC_pro_market_price = []
   global BTCC_pro_market_price_last
   BTCC_pro_market_price_last =[]
   global BTCC_pro_market_ys
   BTCC_pro_market_ys =[]
+  global dict_index
+  global dict_vector
+  #print("dict_index",dict_index)
 
   signal_2 =0;
   signal_1 =0;
@@ -70,73 +90,63 @@ def load_next_banch(start_index,banch_size,predict_time):
 
   i=0
 
-  for fileidx in range(1,banch_size):
-    ll = 0
-    
-    input_dialog = []
-    #read data.txt
+  input_dialog = []
 
-    #fileidx+=1 #10+int(random.random()*20)
-    #print(fileidx%100)
-    if(fileidx%1000==1):
-      #call("clear")
-      print(" reading data: %d %2.2f %% \r"%(fileidx,float(float(fileidx)*100/banch_size)))
+  if(fileidx%1000==1):
+    #call("clear")
+    print(" reading data: %d %2.2f %% \r"%(fileidx,float(float(fileidx)*100/banch_size)))
+  ll = 0
+  #print(fileidx)
+  with open("/home/pan/fairseq/train_file/train.tags.zh-en.zh", "rb") as f:
+    for line in f.readlines():
+      if(ll < start_index):
+        ll +=1
+        continue
 
-    #print(fileidx)
-    with open("/home/pan/fairseq/sentence/s_"+str(fileidx), "rb") as f:
-
-      #head = f.read(257)
-      #print("head2 "+ str(head))
-      head = f.read(13)
-      #print("head "+ str(head))
-      if(str(head)[-2]!="n"):
-        head = f.read(1)
-        #print(str(head))
-      sentence = f.read(256)
-      try:
-        if(len(str(head))==0):
-          print('break')
-          break
-      except Exception as e:
-        print('break')
+      if (fn >banch_size ):
         break
-      finally:
-        #print('read')
+      lineu=line.decode('utf-8')
+      line_vector = []
+      line_mark = np.ones(12)
+      for k in range(0,len(lineu)):
+        try:
+          #print( lineu[k],dict_index[lineu[k]] )
+          word_v =dict_vector[dict_index[lineu[k]]] 
+          #，。;！？”“
+          if(lineu[k] ==',' or lineu[k] =='.' or lineu[k] ==';' or lineu[k] =='!' or lineu[k] =='?' or lineu[k] =='"' or lineu[k] ==','
+            or lineu[k] =='，'or lineu[k] =='。'or lineu[k] ==';' or lineu[k] =='！'or lineu[k] =='？' or lineu[k] =='”' or lineu[k] =='“'):
+          #print(line_v)
+             line_mark[k] = 0
+             #print (lineu[k])
 
-        sentence = f.read(256*12)
-        sentence2 = np.zeros(256*12)
-        lens = len(sentence)
-        for i in range(0,lens) :
-          char=sentence[i:i+1]
-          sentence2[i] = ord(char)/255
-        #print(np.sum(sentence2))
-        #print(np.sum(data_buf4))
-        #print(sentence2.shape)
-        #input_dialog=vstack((data_buf1,data_buf2,data_buf3))
-        #print(sentence2)
-        #return
-        #data_buf1 = data_buf2
-        #data_buf2 = data_buf3
-        #data_buf3 = data_buf4
-        data_buf4 = sentence2
+          line_vector.append(word_v)
+        except Exception as e:
+          pass
 
+      if len(line_vector)==0 :
+        continue
+      if(len(line_vector) < 12):
+        for k in range(0,12-len(line_vector)):
+          line_vector.append(dict_vector[3])
+          sentence_line_mark.append(np.ones(12))
 
-        BTCC_pro_market_img.append(0)
-        BTCC_pro_market_price.append(0)
-        BTCC_pro_market_price_last.append(0)
-         
-        rand = random.random()
+      sentence_line_mark.append(line_mark)
+      BTCC_pro_data.append(line_vector)
+      BTCC_pro_market_price.append(0)
+      BTCC_pro_market_price_last.append(0)
+       
+      rand = random.random()
 
-        #plt.imshow(sentence2.reshape(4*16,3*16))
-        #plt.show()
+      #plt.imshow(sentence2.reshape(4*16,3*16))
+      #plt.show()
 
-        xs.append(fn)
-        ys.append(fn)
-        fn +=1
+      xs.append(fn)
+      ys.append(fn)
+      fn +=1
 
-        BTCC_pro_data.append(sentence2)
-        
-
+      
+      
+  #print(xs)
   print("finish read data")
   #get number of images
   num_images = len(xs)
@@ -169,7 +179,7 @@ def get_data_img(i):
   return BTCC_pro_market_price_last[i]
 
 def get_data_img0(i):
-  return BTCC_pro_market_img[i]
+  return sentence_line_mark[i]
 
 def get_price(i):
   return BTCC_pro_market_price[i]
@@ -186,46 +196,62 @@ def get_price_last(i):
 def get_data_size():
   return len(BTCC_pro_data)
 
-def LoadTrainBatch(train_batch_pointer,batch_size,predict_time):
-    #global train_batch_pointer
-    global num_train_images
+def LoadBatchData(xss,num_train_images,train_batch_pointer,batch_size,predict_time):
+
     x_out = []
     x_digit = []
     y_out = []
     y_last_out =[]
+    Word_mark = []
 
-    for ii in range(0, batch_size-1):
-        img_index = train_xs[(train_batch_pointer + ii) % num_train_images]
-        #if img_index > len(BTCC_pro_market_img)-predict_time:
-        #    img_index = len(BTCC_pro_market_img)-predict_time
+    for ii in range(0, batch_size):
+        img_index = xss[(train_batch_pointer + ii) % num_train_images]
+        #if img_index > len(sentence_line_mark)-predict_time:
+        #    img_index = len(sentence_line_mark)-predict_time
         #print(ii)
         #print(num_train_images)
         if(img_index < 3):
           img_index = 3
         #print(img_index)
-        data_buf1 = get_xdigit(img_index- 3)
-        data_buf2 = get_xdigit(img_index- 2)
-        data_buf3 = get_xdigit(img_index- 1)
 
-        input_dialog = np.concatenate((data_buf1,data_buf2,data_buf3))
+        data_buf1 = get_xdigit(img_index- 3)[0:12]
+        data_buf2 = get_xdigit(img_index- 2)[0:12]
+        data_buf3 = get_xdigit(img_index- 1)[0:12]
+
+        Word_mark_d1 = sentence_line_mark[img_index- 3]
+        Word_mark_d2 = sentence_line_mark[img_index- 2]
+        Word_mark_d3 = sentence_line_mark[img_index- 1]
+
+        Word_mark_d = np.concatenate((Word_mark_d1,Word_mark_d2,Word_mark_d3)).reshape([36])
+        Word_mark.append(Word_mark_d)
+        #print(Word_mark_d.shape)
+
+        input_dialog = np.concatenate((data_buf1,data_buf2,data_buf3)).reshape([36*256])
         #print(input_dialog.shape)
         y = get_xdigit(img_index)
+        #print(y[1])
         #print(y.shape)
         yy = zeros(12*256, dtype=float)
+        for tt in range(0,len(y)):
+          for j in range(0,256):
+            yy[tt] = y[tt][j]
+        '''
         for tt in range(0,10):
           for j in range(0,256):
             ii  = int(tt/2)
-            yy[ii*256+j] +=  (y[tt*256+j]+y[(tt+1)*256+j])/2
+            yy[ii*256+j] +=  (yy[tt*256+j]+yy[(tt+1)*256+j])/2
 
-        '''
+        
         print("SUM:")
         print(np.sum(y))
         print(np.sum(yy))
         '''
+        #print(yy.shape)
         y_out.append(yy)
-        data_mean = (data_buf1+data_buf2+data_buf3)/3
+        #print(data_buf1.shape)
+        #data_mean = (data_buf1+data_buf2+data_buf3)/3
         #print (data_mean)
-        y_last_out.append(data_mean)
+        y_last_out.append(yy)
         #print("img_index %d"% img_index )
         xin = np.zeros(256)
         x_out.append(xin)
@@ -271,39 +297,13 @@ def LoadTrainBatch(train_batch_pointer,batch_size,predict_time):
 	#   continue
 
 
-    return x_out,x_digit, y_out,0.001 , y_last_out
+    return x_out,x_digit, y_out , y_last_out ,Word_mark
 
+def LoadTrainBatch(train_batch_pointer,batch_size,predict_time):
+  return LoadBatchData(train_xs,num_train_images,train_batch_pointer,batch_size,predict_time)
+  
 def LoadValBatch(val_batch_pointer ,batch_size,predict_time):
     #global val_batch_pointer
     global num_val_images
-    x_out = []
-    y_out = []
-    x_digit = []
-    y_last_out = []
-    for ii in range(0, batch_size):
-        img_index = val_xs[(val_batch_pointer + ii) % num_val_images]
-        if(img_index < 3):
-          img_index = 3
-        data_buf1 = get_xdigit(img_index- 3)
-        data_buf2 = get_xdigit(img_index- 2)
-        data_buf3 = get_xdigit(img_index- 1)
-
-        input_dialog = np.concatenate((data_buf1,data_buf2,data_buf3))
-        
-        y = get_xdigit(img_index)
-        yy = zeros(12*256, dtype=float)
-        for tt in range(0,10):
-          for j in range(0,256):
-            ii  = int(tt/3)
-            yy[ii*256+j] +=  (y[tt*256+j]+y[(tt+1)*256+j]+y[(tt+2)*256+j])/3
-
-        y_out.append(yy)
-        data_mean = (data_buf1+data_buf2+data_buf3)/3
-        y_last_out.append(data_mean)
-        #print("img_index %d"% img_index )
-        xin = np.zeros(256)
-        x_out.append(xin)
-        x_digit.append(input_dialog)
-        
-    val_batch_pointer += batch_size
-    return x_out,x_digit, y_out,y_last_out
+    return LoadBatchData(val_xs,num_val_images,val_batch_pointer,batch_size,predict_time)
+ 

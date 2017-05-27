@@ -33,19 +33,18 @@ sess.run(tf.global_variables_initializer())
 #self.init = tf.initialize_variables(tf.all_variables(), name="nInit")
 
 saver = tf.train.Saver()
-saver.restore(sess,LOGDIR+"/model_1D2.ckpt")
+#saver.restore(sess,LOGDIR+"/model_1D2.ckpt")
 print("Model restore") 
 
 #merged_summary_op = tf.merge_all_summaries()
 
 
-banch_size = 2
-loop_cnt = 1000
+banch_size = 1
+loop_cnt = 10000
 predict_time = 5
 max_cnt = 170000 # BTCC_data.get_data_size()
 start_it = int(random.random()*20)+20
-step_times = 700/banch_size
-
+step_times = 50/banch_size
 
 #img = scipy.misc.imread('steering_wheel_image.png', mode="RGB")
 #cv2.imshow("steering wheel", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
@@ -57,7 +56,6 @@ def accuracy0(predictions, labels):
     return 100.0 * np.sum(np.argmax(predictions, 1) == np.argmax(labels, 1)) / predictions.shape[0]
 
 
-
 #save_pb(saver)
 def tf_sgd_relu_nn2(sess1=0):
   global sess
@@ -65,7 +63,7 @@ def tf_sgd_relu_nn2(sess1=0):
     sess =sess1
   last_loss=0
   loss_change_cnt = 0
-  learn_r = 0.001/banch_size
+  learn_r = 0.01/banch_size
   banch_i = 10000
   accuracy2 = 0
   banch_i = int(random.random()*20000)
@@ -77,11 +75,12 @@ def tf_sgd_relu_nn2(sess1=0):
   #train over the dataset about 30 times
   for i in range(start_it,int(BTCC_data.num_images * 10000000000)):
     train_batch_pointer = i*banch_size
-    xs,x_digit, ys,learn_r2,yl = BTCC_data.LoadTrainBatch(train_batch_pointer,banch_size,predict_time)
+    xs,x_digit, ys,yl,Word_mark = BTCC_data.LoadTrainBatch(train_batch_pointer,banch_size,predict_time)
     #print(x_digit[1:2].shape,xs[1:2].shape,ys[1:2].shape)
     #print("training: %d" % i)
     #train_step.run(feed_dict={model.x: xs, model.y_: ys, model.keep_prob: 0.5})
-    feed_dict = {model.x: xs,model.x_digit:x_digit, model.y_: ys,model.yl: yl, model.keep_prob: 0.7,learning_rate:learn_r}
+    feed_dict = {model.x: xs,model.x_digit:x_digit, model.y_: ys,model.yl: yl, 
+    model.Word_mark:Word_mark, model.keep_prob: 0.7,learning_rate:learn_r}
     #{tf_train_dataset: batch_data, tf_train_labels: batch_labels}
     _, l, predictions = sess.run(
         [optimizer, loss, train_prediction], feed_dict=feed_dict)
@@ -90,7 +89,7 @@ def tf_sgd_relu_nn2(sess1=0):
       last_loss = l
     #key = cv2.waitKey(5)
 
-    last_loss = last_loss*0.9+0.1*l
+    last_loss = last_loss*0.98+0.02*l
     print("Minibatch loss at step %d: %f  loss_avg:%f" % (i, l,last_loss))
     if (i % (20*step_times) == 1) or (key == ord('t')):
       
@@ -117,8 +116,9 @@ def tf_sgd_relu_nn2(sess1=0):
     
     if (i % (10*step_times) == 1) or (key == ord('t')):
       val_batch_pointer = i*banch_size
-      xs,x_digit, ys,yl = BTCC_data.LoadValBatch(val_batch_pointer ,banch_size ,predict_time)
-      mloss = loss.eval(feed_dict={model.x:xs,model.x_digit:x_digit, model.y_: ys,model.yl: yl,model.keep_prob: 1.0})
+      xs,x_digit, ys,yl ,Word_mark= BTCC_data.LoadValBatch(val_batch_pointer ,banch_size ,predict_time)
+      mloss = loss.eval(feed_dict={model.x:xs,model.x_digit:x_digit, 
+        model.y_: ys,model.yl: yl,model.Word_mark:Word_mark,model.keep_prob: 1.0})
       print("step %d, val loss %g"%(i, mloss))
 
       if (mloss < 0.02):
