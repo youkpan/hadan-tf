@@ -1,3 +1,46 @@
+import tensorflow as tf
+import numpy as np
+
+sess = tf.InteractiveSession()
+
+Vector_Word_i=[  [[1,2],[3,4] ,[1,2]],
+				 [[3,4],[5,6],[7,8]] ,
+				 [[9,10],[11,12],[13,14]],
+				 [[15,16],[17,18],[19,20]] 
+			  ] #np.ones((2,3,2), dtype=float)
+Word_mark_i=[[1,2,3],[1,2,3],[1,2,3],[5,6,7]] #np.ones((2,3), dtype=float)
+
+x_digit = tf.placeholder(tf.float32, shape=[None,3,2])
+Vector_Word =tf.reshape(x_digit, shape=[-1,3,2])
+
+Word_mark = tf.placeholder(tf.float32, shape=[None,3])
+
+Word_mark_w = 1
+Word_mark_b = 1
+Word_mark_t = tf.reshape(Word_mark,shape=[-1,1])
+#print(Vector_Word.shape)
+
+S1 = tf.gather(Vector_Word, 0,)
+
+def word_loop(idx,Wc,S1): 
+  W1 = tf.gather(Vector_Word, idx)
+  W2 = tf.gather(Vector_Word, idx+1)
+
+  W12 =  tf.reduce_sum( tf.abs(tf.subtract(W2 , W1)))/3072
+  mark_i = Word_mark_w*tf.gather(Word_mark_t, idx+1)+Word_mark_b
+
+  S2 =  mark_i*(S1 + W1*W12)*  Wc   + W2
+  return S2
+
+S1=tf.gather(Vector_Word, 0)
+S2 = word_loop(0,0.07,S1)
+
+print( sess.run(S2,feed_dict={x_digit:Vector_Word_i,Word_mark:Word_mark_i} ))
+
+end
+
+
+
 dict_index = {}
 dict_vector = []
 with open("/home/pan/fairseq/dict_string", "rb") as f:

@@ -8,6 +8,7 @@ n_classes = 256*12
 n_vocab = 6204
 mshape = 256*12*3 # (28+24+24+120)*2+24+7+31+12+2
 word_len = 20
+batch = 100
 
 _weights = {
     'wc11': tf.Variable(tf.random_normal([1, 1, 32])),
@@ -40,8 +41,8 @@ _biases = {
 }
 
 x = tf.placeholder(tf.float32, shape=[None, n_input])
-x_digit = tf.placeholder(tf.float32, shape=[None, mshape])
-y_ = tf.placeholder(tf.float32, shape=[None, n_classes])
+x_digit = tf.placeholder(tf.float32, shape=[36,batch,256])
+y_ = tf.placeholder(tf.float32, shape=[batch,3072])
 yl = tf.placeholder(tf.float32, shape=[None, n_classes])
 #Wab = tf.placeholder(tf.float32, shape=[None, word_len])
 #Vector_Word = tf.placeholder(tf.float32, shape=[None, n_vocab])
@@ -153,8 +154,10 @@ xin = tf.nn.dropout(x, keep_prob)
 
 #W12=tf.reshape(Wab, shape=[-1,12])
 #print(x_digit.shape)
-Vector_Word =tf.reshape(x_digit, shape=[-1,256])
-Word_mark = tf.placeholder(tf.float32, shape=[None,36])
+Vector_Word =tf.reshape(x_digit, shape=[36,batch,256])
+Word_mark = tf.placeholder(tf.float32, shape=[36,batch])
+diff_w = tf.placeholder(tf.float32, shape=[36,batch])
+
 Word_mark_w = weight_variable([1],name='W_m')
 Word_mark_b = bias_variable([1],name='W_b')
 Word_mark_t = tf.reshape(Word_mark,shape=[-1,1])
@@ -167,13 +170,13 @@ def word_loop(idx,Wc,S1):
   W2 = tf.gather(Vector_Word, idx+1)
   #print(W1.shape)
   
-  W12 =  tf.reduce_sum( tf.abs(tf.subtract(W2 , W1)))/3072
+  W12 =  tf.reshape(tf.gather(diff_w, idx),shape=[batch,1]) #tf.reduce_sum( tf.abs(tf.subtract(W2 , W1)))/3072
   #print(W12.shape)
   #W12 = tf.reshape(W12,shape=[256,1])
   #W12 =  tf.matmul(W1,W12)
   mark_i = Word_mark_w*tf.gather(Word_mark_t, idx+1)+Word_mark_b
 
-  S2 =  mark_i*(S1 + W1*W12)*  Wc   + W2
+  S2 =  mark_i*(S1 + W1*W12) + W2
   return S2
 
 S1=tf.gather(Vector_Word, 0)
@@ -217,9 +220,13 @@ SSS10= word_loop(32,0.07,SSS9)
 SSS11= word_loop(33,0.07,SSS10)
 SSS12= word_loop(34,0.07,SSS11)
 
-concat = tf.reshape( [S1, S2,S3,S4,S5,S6,S7,S8,S9,S10,S11,S12,
+#print("S1.shape",S1.shape)
+#concat = tf.concat( [S1, S2] ,0)
+#print("concat.shape", concat.shape)
+
+concat = tf.reshape( tf.concat([S1, S2,S3,S4,S5,S6,S7,S8,S9,S10,S11,S12,
   SS1, SS2,SS3,SS4,SS5,SS6,SS7,SS8,SS9,SS10,SS11,SS12,SSS1, 
-    SSS2,SSS3,SSS4,SSS5,SSS6,SSS7,SSS8,SSS9,SSS10,SSS11,SSS12 ] , shape=[-1,n_input*36])
+    SSS2,SSS3,SSS4,SSS5,SSS6,SSS7,SSS8,SSS9,SSS10,SSS11,SSS12 ] , 0) , shape=[-1,n_input*36])
 
 #print(concat.shape)
 
