@@ -15,7 +15,7 @@ print(image_show.shape)
 
 sess = tf.InteractiveSession()
 saver = tf.train.Saver()
-#saver.restore(sess, "save/model_1D2.ckpt")
+saver.restore(sess, "save/model_1D2.ckpt")
  
 filename = []
 
@@ -28,7 +28,7 @@ idx = int(random.random(1)*1000)+ int(random.random()*20000)
 
 for q in range(1,110):
 
-  bench_size  = 100000
+  bench_size  = 1000
   
   BTCC_data.load_next_banch(idx,bench_size,1)
    
@@ -46,7 +46,7 @@ for q in range(1,110):
       #x_digit2 = x_digit.reshape([3*12*2,16*8])
       #plt.imshow(x_digit2)
       #plt.show()
-      plt.imshow(ys[0].reshape([3*16,4*16]))
+      #plt.imshow(ys[0].reshape([3*16,4*16]))
 
 
       image_show = model.y.eval(feed_dict={model.x: xs,model.x_digit:x_digit, model.y_: ys,model.yl: yl, 
@@ -57,28 +57,35 @@ for q in range(1,110):
       sentence = image_show
       sentence_w =[]
       sentence_str = ""
+      sentence_str2 = ""
       for j in range(0,12):
         top = np.dot(BTCC_data.dict_vector,sentence[j].reshape([256,1]))
         max_idx = 0
         max_s = top[0]
+        #print(top)
+        max_idx2 = 0
         #print(len(BTCC_data.dict_index_str))
         for k in range(0,len(BTCC_data.dict_index_str)):
           if top[k] > max_s :
             max_s = top[k]
+            max_idx2 = max_idx
             max_idx = k
 
         #print(max_idx)
         word = BTCC_data.dict_index_str[max_idx]
+        word2 =BTCC_data.dict_index_str[max_idx2]
         sentence_w.append(word)
         sentence_str += word
+        sentence_str2 += word2
 
       print(sentence_str)
+      print(sentence_str2)
       image_show = image_show.reshape(12,256)
       print(image_show)
-      print(image_show.shape)
+      print(np.sum(image_show))
       image_show = image_show.reshape(3*16,4*16)
 
-      #plt.imshow(image_show)
+      plt.imshow(image_show)
 
       #plt.ylim(-20, 60.)
       plt.show()

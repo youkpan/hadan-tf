@@ -8,7 +8,7 @@ n_classes = 256*12
 n_vocab = 6204
 mshape = 256*12*3 # (28+24+24+120)*2+24+7+31+12+2
 word_len = 20
-batch = 100
+batch = 1
 
 _weights = {
     'wc11': tf.Variable(tf.random_normal([1, 1, 32])),

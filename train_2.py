@@ -39,13 +39,13 @@ print("Model restore")
 #merged_summary_op = tf.merge_all_summaries()
 
 
-banch_size = 100
+banch_size = 1
 
 loop_cnt = 10000
 predict_time = 5
 max_cnt = 170000 # BTCC_data.get_data_size()
 start_it = int(random.random()*20)+20
-step_times = int(100/banch_size)
+step_times = int(400/banch_size)
 
 #img = scipy.misc.imread('steering_wheel_image.png', mode="RGB")
 #cv2.imshow("steering wheel", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))

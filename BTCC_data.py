@@ -48,7 +48,14 @@ with open("/home/pan/fairseq/dict_vector", "rb") as f:
 
 #print(len(dict_vector))
 #print(dict_vector[1])
-
+bookdata = []
+lineu = []
+with open("/home/pan/download/utf/allbook.txt", "rb") as f:
+  #if(f.readline() == ""):
+  print("geting data")
+  bookdata = f.read(170000000).decode('UTF-8')
+  print("geting data  OK ")
+  lineu = bookdata
 
 def load_next_banch(start_index,banch_size,predict_time):
 
@@ -76,6 +83,7 @@ def load_next_banch(start_index,banch_size,predict_time):
   BTCC_pro_market_ys =[]
   global dict_index
   global dict_vector
+  global lineu
   #print("dict_index",dict_index)
 
   signal_2 =0;
@@ -98,19 +106,11 @@ def load_next_banch(start_index,banch_size,predict_time):
 
   input_dialog = []
 
-  if(fileidx%1000==1):
-    #call("clear")
-    print(" reading data: %d %2.2f %% \r"%(fileidx,float(float(fileidx)*100/banch_size)))
-  ll = 0
-  #print(fileidx) /home/pan/fairseq/train_file/train.zh-cn-en.zh-cn
-  with open("/home/pan/download/books/utf/jinyong/all.txt", "rb") as f:
-    #if(f.readline() == ""):
-    data = f.read(100000000).decode('UTF-8')
-    print (len(data))
-    text_words = len(data)
+  if 1:
+    print (len(bookdata))
+    text_words = len(bookdata)
     #for line in f.readlines():
     position = 0
-    lineu = data
 
     position = start_index
     while(position+500 < text_words):
