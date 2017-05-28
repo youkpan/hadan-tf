@@ -34,13 +34,13 @@ sess.run(tf.global_variables_initializer())
 #self.init = tf.initialize_variables(tf.all_variables(), name="nInit")
 
 saver = tf.train.Saver()
-saver.restore(sess,LOGDIR+"/model_t_same.ckpt")
+#saver.restore(sess,LOGDIR+"/model_t_same_dict.ckpt")
 print("Model restore") 
 
 #merged_summary_op = tf.merge_all_summaries()
 
 
-banch_size = 400
+banch_size = 100
 
 loop_cnt = 10000
 predict_time = 5
@@ -66,7 +66,7 @@ def tf_sgd_relu_nn2(sess1=0):
     sess =sess1
   last_loss=0
   loss_change_cnt = 0
-  learn_r = 0.0005/banch_size
+  learn_r = 0.01/banch_size
   banch_i = 10000
   accuracy2 = 0
   banch_i = int(random.random()*max_cnt)
@@ -78,7 +78,7 @@ def tf_sgd_relu_nn2(sess1=0):
   #train over the dataset about 30 times
   for i in range(start_it,int(BTCC_data.num_images * 10000000000)):
     train_batch_pointer = i*banch_size
-    xs,x_digit, ys,yl,Word_mark,diff_w = BTCC_data.LoadTrainBatch(train_batch_pointer,banch_size,predict_time)
+    xs,x_digit, ys,yl,Word_mark,diff_w,sentence = BTCC_data.LoadTrainBatch(train_batch_pointer,banch_size,predict_time)
     #print(x_digit[1:2].shape,xs[1:2].shape,ys[1:2].shape)
     #print("training: %d" % i)
     #train_step.run(feed_dict={model.x: xs, model.y_: ys, model.keep_prob: 0.5})
@@ -119,14 +119,14 @@ def tf_sgd_relu_nn2(sess1=0):
     
     if (i % (10*step_times) == 1) or (key == ord('t')):
       val_batch_pointer = i*banch_size
-      xs,x_digit, ys,yl ,Word_mark,diff_w= BTCC_data.LoadValBatch(val_batch_pointer ,banch_size ,predict_time)
+      xs,x_digit, ys,yl ,Word_mark,diff_w, sentence= BTCC_data.LoadValBatch(val_batch_pointer ,banch_size ,predict_time)
       mloss = loss.eval(feed_dict={model.x:xs,model.x_digit:x_digit, 
         model.y_: ys,model.yl: yl,model.Word_mark:Word_mark,model.diff_w:diff_w,
         model.keep_prob: 1.0})
       print("step %d, val loss %g"%(i, mloss))
 
       if (mloss < 0.02):
-        checkpoint_path = os.path.join(LOGDIR, "%g-model_t_same.ckpt"%mloss)
+        checkpoint_path = os.path.join(LOGDIR, "%g-model_t_same_dict.ckpt"%mloss)
         filename = saver.save(sess, checkpoint_path)
         print("Model saved in file: %s" % filename)
         break
@@ -152,7 +152,7 @@ def tf_sgd_relu_nn2(sess1=0):
       print("saving model")
       if not os.path.exists(LOGDIR):
               os.makedirs(LOGDIR)
-      checkpoint_path = os.path.join(LOGDIR, "model_t_same.ckpt")
+      checkpoint_path = os.path.join(LOGDIR, "model_t_same_dict.ckpt")
       
       filename = saver.save(sess, checkpoint_path)
       print("Model saved in file: %s" % filename)

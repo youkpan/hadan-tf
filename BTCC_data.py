@@ -10,6 +10,9 @@ from subprocess import call
 import tensorflow as tf
 
 num_images=0
+vector_w = 168
+sentence_len = 17
+
 
 global BTCC_pro_data
 global sentence_line_mark
@@ -24,7 +27,7 @@ global dict_index_str
 dict_index = {}
 dict_index_str = {}
 dict_vector = []
-with open("/home/pan/fairseq/dict_string", "rb") as f:
+with open("/home/pan/fairseq/dict_string2.txt", "rb") as f:
   dict_string = str(f.read(100000).decode('utf-8'))
   dict2=dict_string.split(" ")
   for k in range(0,len(dict2)):
@@ -136,7 +139,7 @@ def load_next_banch(start_index,banch_size,predict_time):
 
       #lineu=line.decode('utf-8')
       line_vector = []
-      line_mark = np.ones(12)
+      line_mark = np.ones(sentence_len)
       #print(line)
       position_t =  position
       print("----------")
@@ -145,7 +148,10 @@ def load_next_banch(start_index,banch_size,predict_time):
         try:
           #print( lineu[k],dict_index[lineu[k]] )
           sentence += lineu[k]
-          word_v = dict_vector[dict_index[lineu[k]]] 
+          #word_v = dict_vector[dict_index[lineu[k]]] 
+          word_v = np.zeros([168])
+          word_v[int(dict_index[lineu[k]]/84)+128] = 1
+          word_v[int(dict_index[lineu[k]]%84)] = 1
           #，。;！？”“
           if(lineu[k] ==','  or lineu[k] ==','
             or lineu[k] =='，'  or lineu[k] =='“'):
@@ -170,16 +176,16 @@ def load_next_banch(start_index,banch_size,predict_time):
       print (sentence)
       sentence_data.append(sentence)
 
-      if(len(line_vector) < 12):
-        for k in range(0,12-len(line_vector)):
+      if(len(line_vector) < sentence_len):
+        for k in range(0,sentence_len-len(line_vector)):
           line_vector.append(dict_vector[0])
-          sentence_line_mark.append(np.ones(12))
+          sentence_line_mark.append(np.ones(sentence_len))
 
       '''
-      line_vector2 = np.zeros([12,256])
+      line_vector2 = np.zeros([sentence_len,vector_w])
 
-      for ii in range(0, 12):
-        for jj in range(0, 256):
+      for ii in range(0, sentence_len):
+        for jj in range(0, vector_w):
           line_vector2[ii][jj] = line_vector[ii][jj]
       #x_digit3 = line_vector.reshape([3*16,16*4])
       plt.imshow(line_vector2)
@@ -290,61 +296,61 @@ def LoadBatchData(xss,num_train_images,train_batch_pointer,batch_size,predict_ti
         sentence_data_t.append([sentence_data[img_index1],sentence_data[img_index2]
           ,sentence_data[img_index3]])
 
-        input_dialog_t = np.zeros([36,256],dtype=float)
-        for j in range(0,12):
-          input_dialog_t[j] = np.zeros(256)
+        input_dialog_t = np.zeros([sentence_len*3,vector_w],dtype=float)
+        for j in range(0,sentence_len):
+          input_dialog_t[j] = np.zeros(vector_w)
           try:
             input_dialog_t[j] = data_buf1[j].copy()
           except Exception as e:
             pass
 
-        for j in range(12,24):
-          input_dialog_t[j] = np.zeros(256)
+        for j in range(sentence_len,sentence_len*2):
+          input_dialog_t[j] = np.zeros(vector_w)
           try:
             input_dialog_t[j] = data_buf2[j].copy()
           except Exception as e:
             pass
 
-        for j in range(24,36):
-          input_dialog_t[j] = np.zeros(256)
+        for j in range(sentence_len*2,sentence_len*3):
+          input_dialog_t[j] = np.zeros(vector_w)
           try:
             input_dialog_t[j] = data_buf3[j].copy()
           except Exception as e:
             pass  
 
-        input_dialog = input_dialog_t.reshape([36*256])
+        input_dialog = input_dialog_t.reshape([sentence_len*3*vector_w])
 
         Word_mark_d1 = sentence_line_mark[img_index1]
         Word_mark_d2 = sentence_line_mark[img_index2]
         Word_mark_d3 = sentence_line_mark[img_index3]
 
-        Word_mark_d = np.concatenate((Word_mark_d1,Word_mark_d2,Word_mark_d3)).reshape([36])
+        Word_mark_d = np.concatenate((Word_mark_d1,Word_mark_d2,Word_mark_d3)).reshape([sentence_len*3])
         Word_mark.append(Word_mark_d)
         #print(Word_mark_d.shape)
 
-        #input_dialog = np.concatenate((data_buf1,data_buf2,data_buf3)).reshape([36*256])
+        #input_dialog = np.concatenate((data_buf1,data_buf2,data_buf3)).reshape([sentence_len*3*vector_w])
         #print(input_dialog.shape)
         #print(random.random(1))
 
 
         y = get_xdigit(img_index)
 
-        diff = zeros(36, dtype=float)
-        for i in range(0,35):
+        diff = zeros(sentence_len*3, dtype=float)
+        for i in range(0,sentence_len*3-1):
           diff2 = 0
-          for j in range(0,256):
-            diff2 += input_dialog[(i+1)*256+j] - input_dialog[i*256+j]
-          diff[i] = diff2/256
+          for j in range(0,vector_w):
+            diff2 += input_dialog[(i+1)*vector_w+j] - input_dialog[i*vector_w+j]
+          diff[i] = diff2/vector_w
 
         diff_s.append(diff)
 
         #print(y[1])
         #print(y.shape)
-        yy = np.zeros([12*256], dtype=float)
+        yy = np.zeros([sentence_len*vector_w], dtype=float)
 
-        for tt in range(0,min(len(y),12)):
-          for j in range(0,256):
-            yy[tt*256+j] = float(y[tt][j])
+        for tt in range(0,min(len(y),sentence_len)):
+          for j in range(0,vector_w):
+            yy[tt*vector_w+j] = float(y[tt][j])
 
         #print("show,yy")
         #plt.imshow(yy.reshape(3*16,4*16))
@@ -352,9 +358,9 @@ def LoadBatchData(xss,num_train_images,train_batch_pointer,batch_size,predict_ti
 
         '''
         for tt in range(0,10):
-          for j in range(0,256):
+          for j in range(0,vector_w):
             ii  = int(tt/2)
-            yy[ii*256+j] +=  (yy[tt*256+j]+yy[(tt+1)*256+j])/2
+            yy[ii*vector_w+j] +=  (yy[tt*vector_w+j]+yy[(tt+1)*vector_w+j])/2
 
         
         print("SUM:")
@@ -368,7 +374,7 @@ def LoadBatchData(xss,num_train_images,train_batch_pointer,batch_size,predict_ti
         #print (data_mean)
         y_last_out.append(yy)
         #print("img_index %d"% img_index )
-        xin = np.zeros(256)
+        xin = np.zeros(vector_w)
         x_out.append(xin)
         x_digit.append(input_dialog)
         
@@ -410,11 +416,11 @@ def LoadBatchData(xss,num_train_images,train_batch_pointer,batch_size,predict_ti
     train_batch_pointer += batch_size
     #while cv2.waitKey(100) != ord('q'):
 	#   continue
-    x_digit2 = np.zeros((36,batch_size,256))
-    diff_s2 = np.zeros((36,batch_size))
-    Word_mark2 = np.zeros((36,batch_size))
+    x_digit2 = np.zeros((sentence_len*3,batch_size,vector_w))
+    diff_s2 = np.zeros((sentence_len*3,batch_size))
+    Word_mark2 = np.zeros((sentence_len*3,batch_size))
     #print(len(x_digit[0]))
-    for ii in range(0, 36):
+    for ii in range(0, sentence_len*3):
       for jj in range(0, batch_size):
         
         x_digit2[ii][jj] = x_digit[jj][ii].copy()
@@ -427,13 +433,13 @@ def LoadBatchData(xss,num_train_images,train_batch_pointer,batch_size,predict_ti
     #print(x_digit2[4])
     
     '''
-    for ii in range(0, 12):
-      for i2 in range(0, 256):
+    for ii in range(0, sentence_len):
+      for i2 in range(0, vector_w):
       for jj in range(0, batch_size):
         y_out2[jj][ii] = y_out[jj][ii]
     '''
 
-    return x_out,x_digit2, y_out_test2 , y_last_out ,Word_mark2 ,diff_s2 ,sentence_data_t
+    return x_out,x_digit, y_out_test2 , y_last_out ,Word_mark2 ,diff_s2 ,sentence_data_t
 
 def LoadTrainBatch(train_batch_pointer,batch_size,predict_time):
   return LoadBatchData(train_xs,num_train_images,train_batch_pointer,batch_size,predict_time)
