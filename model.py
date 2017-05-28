@@ -42,8 +42,8 @@ _biases = {
 
 x = tf.placeholder(tf.float32, shape=[None, n_input])
 x_digit = tf.placeholder(tf.float32, shape=[36,batch,256])
-y_ = tf.placeholder(tf.float32, shape=[batch,3072])
-yl = tf.placeholder(tf.float32, shape=[None, n_classes])
+y_ = tf.placeholder(tf.float32, shape=[None,2])
+yl = tf.placeholder(tf.float32, shape=[None, n_input*12])
 #Wab = tf.placeholder(tf.float32, shape=[None, word_len])
 #Vector_Word = tf.placeholder(tf.float32, shape=[None, n_vocab])
 
@@ -238,7 +238,6 @@ h_fc2 = prelu(tf.nn.bias_add(tf.matmul(concat, W_fc2) , b_fc2))
 h_fc2_drop = tf.nn.dropout(h_fc2, keep_prob)
   
 
-
 W_fc3 = weight_variable([5000, n_classes],name='W_fc3')
 b_fc3 = bias_variable([ n_classes],name='b_fc3')
 
@@ -268,8 +267,8 @@ h_fc6 = prelu(tf.nn.bias_add(tf.matmul(h_fc5_drop, W_fc6) , b_fc6))
 h_fc6_drop = tf.nn.dropout(h_fc6, keep_prob)
 
 
-W_fc7 = weight_variable([ 5000,  n_classes],name='W_fc7')
-b_fc7 = bias_variable([ n_classes],name='b_fc7')
+W_fc7 = weight_variable([ 5000,  2],name='W_fc7')
+b_fc7 = bias_variable([ 2],name='b_fc7')
 
 y = tf.nn.bias_add(tf.matmul(h_fc6_drop, W_fc7) , b_fc7)
 

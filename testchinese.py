@@ -59,11 +59,6 @@ with open("/home/pan/fairseq/train_file/train.tags.zh-en.zh", "rb") as f:
     		pass
       
 
-exit
-
-
-
-
 print("dict_index",dict_index)
 print(len(dict_index))
 print(dict_index['你'])

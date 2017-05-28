@@ -50,10 +50,11 @@ with open("/home/pan/fairseq/dict_vector", "rb") as f:
 #print(dict_vector[1])
 bookdata = []
 lineu = []
+sentence_data = []
 with open("/home/pan/download/utf/allbook.txt", "rb") as f:
   #if(f.readline() == ""):
   print("geting data")
-  bookdata = f.read(170000000).decode('UTF-8')
+  bookdata = f.read(190000000).decode('UTF-8')
   print("geting data  OK ")
   lineu = bookdata
 
@@ -121,16 +122,17 @@ def load_next_banch(start_index,banch_size,predict_time):
       while(position +100 < text_words ):
         position +=1
         k = position
-        if( lineu[k] =='：' or lineu[k] ==':' ):
+        if( lineu[k] =='：' or lineu[k] ==':' or lineu[k] =='“' or lineu[k] =='"'):
           #or lineu[k] =='，' or lineu[k] =='，' or  lineu[k] =='。'or lineu[k] ==';' or lineu[k] =='！'or lineu[k] =='？' or lineu[k] =='”' 
           #  or lineu[k] ==':'  or lineu[k] =='.' or lineu[k] ==';' or lineu[k] =='!' or lineu[k] =='?' or lineu[k] =='"' ):
             break;
+
       position +=1
       
       if lineu[k] =="“" :
         position +=1
-      else:
-        position +=1
+      #else:
+        #position +=1
 
       #lineu=line.decode('utf-8')
       line_vector = []
@@ -160,15 +162,19 @@ def load_next_banch(start_index,banch_size,predict_time):
           line_vector.append(word_v)
         except Exception as e:
           pass
-      print (sentence)
+      
       position = position_t
 
-      if len(line_vector)==0 :
+      if len(line_vector)< 3 :
         continue
+      print (sentence)
+      sentence_data.append(sentence)
+
       if(len(line_vector) < 12):
         for k in range(0,12-len(line_vector)):
           line_vector.append(dict_vector[0])
           sentence_line_mark.append(np.ones(12))
+
       '''
       line_vector2 = np.zeros([12,256])
 
@@ -254,6 +260,8 @@ def LoadBatchData(xss,num_train_images,train_batch_pointer,batch_size,predict_ti
     y_last_out =[]
     Word_mark = []
     diff_s = []
+    y_out_test2 = []
+    sentence_data_t = []
     for ii in range(0, batch_size):
         img_index = xss[(train_batch_pointer + ii) % num_train_images]
         #if img_index > len(sentence_line_mark)-predict_time:
@@ -263,10 +271,24 @@ def LoadBatchData(xss,num_train_images,train_batch_pointer,batch_size,predict_ti
         if(img_index < 3):
           img_index = 3
         #print(img_index)
+        y_out_test = []
+        if random.random() < 1.1 :
+          img_index1 = int(random.random()*num_train_images)
+          img_index2 = int(random.random()*num_train_images)
+          img_index3 = int(random.random()*num_train_images)
+          y_out_test = np.array([0,1])
+        else :
+          img_index1 = img_index - 3
+          img_index2 = img_index - 2
+          img_index3 = img_index - 1
+          y_out_test = np.array([1,0])
 
-        data_buf1 = get_xdigit(img_index- 3)
-        data_buf2 = get_xdigit(img_index- 2)
-        data_buf3 = get_xdigit(img_index- 1)
+        y_out_test2.append(y_out_test)
+        data_buf1 = get_xdigit(img_index1)
+        data_buf2 = get_xdigit(img_index2)
+        data_buf3 = get_xdigit(img_index3)
+        sentence_data_t.append([sentence_data[img_index1],sentence_data[img_index2]
+          ,sentence_data[img_index3]])
 
         input_dialog_t = np.zeros([36,256],dtype=float)
         for j in range(0,12):
@@ -292,9 +314,9 @@ def LoadBatchData(xss,num_train_images,train_batch_pointer,batch_size,predict_ti
 
         input_dialog = input_dialog_t.reshape([36*256])
 
-        Word_mark_d1 = sentence_line_mark[img_index- 3]
-        Word_mark_d2 = sentence_line_mark[img_index- 2]
-        Word_mark_d3 = sentence_line_mark[img_index- 1]
+        Word_mark_d1 = sentence_line_mark[img_index1]
+        Word_mark_d2 = sentence_line_mark[img_index2]
+        Word_mark_d3 = sentence_line_mark[img_index3]
 
         Word_mark_d = np.concatenate((Word_mark_d1,Word_mark_d2,Word_mark_d3)).reshape([36])
         Word_mark.append(Word_mark_d)
@@ -302,6 +324,9 @@ def LoadBatchData(xss,num_train_images,train_batch_pointer,batch_size,predict_ti
 
         #input_dialog = np.concatenate((data_buf1,data_buf2,data_buf3)).reshape([36*256])
         #print(input_dialog.shape)
+        #print(random.random(1))
+
+
         y = get_xdigit(img_index)
 
         diff = zeros(36, dtype=float)
@@ -408,7 +433,7 @@ def LoadBatchData(xss,num_train_images,train_batch_pointer,batch_size,predict_ti
         y_out2[jj][ii] = y_out[jj][ii]
     '''
 
-    return x_out,x_digit2, y_out , y_last_out ,Word_mark2 ,diff_s2
+    return x_out,x_digit2, y_out_test2 , y_last_out ,Word_mark2 ,diff_s2 ,sentence_data_t
 
 def LoadTrainBatch(train_batch_pointer,batch_size,predict_time):
   return LoadBatchData(train_xs,num_train_images,train_batch_pointer,batch_size,predict_time)

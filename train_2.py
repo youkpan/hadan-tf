@@ -19,7 +19,8 @@ sess = tf.InteractiveSession()
 learning_rate = tf.placeholder(tf.float32, shape=[])
 #loss = tf.reduce_mean(tf.square(tf.subtract(model.y_, model.y)))
 #loss = tf.reduce_mean((model.y_[0][0]- model.y[0][0]) **2 + (model.y_[0][1]- model.y[0][1])**2)
-loss = tf.reduce_sum( tf.abs(tf.subtract(model.y,   model.y_)))
+#loss = tf.reduce_sum( tf.abs(tf.subtract(model.y,   model.y_)))
+loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits( logits= model.y,  labels= model.y_))
 
 #loss_summary = tf.scalar_summary("loss", loss)
 
@@ -33,19 +34,19 @@ sess.run(tf.global_variables_initializer())
 #self.init = tf.initialize_variables(tf.all_variables(), name="nInit")
 
 saver = tf.train.Saver()
-saver.restore(sess,LOGDIR+"/model_1D2.ckpt")
+saver.restore(sess,LOGDIR+"/model_t_same.ckpt")
 print("Model restore") 
 
 #merged_summary_op = tf.merge_all_summaries()
 
 
-banch_size = 1
+banch_size = 400
 
 loop_cnt = 10000
 predict_time = 5
-max_cnt = 170000 # BTCC_data.get_data_size()
+max_cnt = 1300000 # BTCC_data.get_data_size()
 start_it = int(random.random()*20)+20
-step_times = int(400/banch_size)
+step_times = int(700/banch_size)
 
 #img = scipy.misc.imread('steering_wheel_image.png', mode="RGB")
 #cv2.imshow("steering wheel", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
@@ -60,14 +61,15 @@ def accuracy0(predictions, labels):
 #save_pb(saver)
 def tf_sgd_relu_nn2(sess1=0):
   global sess
+  global max_cnt
   if(sess1!=0):
     sess =sess1
   last_loss=0
   loss_change_cnt = 0
-  learn_r = 0.1/banch_size
+  learn_r = 0.0005/banch_size
   banch_i = 10000
   accuracy2 = 0
-  banch_i = int(random.random()*20000)
+  banch_i = int(random.random()*max_cnt)
   BTCC_data.load_next_banch(banch_i,loop_cnt,predict_time)
   key = ''
   #summary_writer = tf.train.SummaryWriter('tf_train', sess.graph)
@@ -124,7 +126,7 @@ def tf_sgd_relu_nn2(sess1=0):
       print("step %d, val loss %g"%(i, mloss))
 
       if (mloss < 0.02):
-        checkpoint_path = os.path.join(LOGDIR, "%g-model_1D2.ckpt"%mloss)
+        checkpoint_path = os.path.join(LOGDIR, "%g-model_t_same.ckpt"%mloss)
         filename = saver.save(sess, checkpoint_path)
         print("Model saved in file: %s" % filename)
         break
@@ -150,7 +152,7 @@ def tf_sgd_relu_nn2(sess1=0):
       print("saving model")
       if not os.path.exists(LOGDIR):
               os.makedirs(LOGDIR)
-      checkpoint_path = os.path.join(LOGDIR, "model_1D2.ckpt")
+      checkpoint_path = os.path.join(LOGDIR, "model_t_same.ckpt")
       
       filename = saver.save(sess, checkpoint_path)
       print("Model saved in file: %s" % filename)
