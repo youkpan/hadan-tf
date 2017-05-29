@@ -19,8 +19,8 @@ sess = tf.InteractiveSession()
 learning_rate = tf.placeholder(tf.float32, shape=[])
 #loss = tf.reduce_mean(tf.square(tf.subtract(model.y_, model.y)))
 #loss = tf.reduce_mean((model.y_[0][0]- model.y[0][0]) **2 + (model.y_[0][1]- model.y[0][1])**2)
-#loss = tf.reduce_sum( tf.abs(tf.subtract(model.y,   model.y_)))
-loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits( logits= model.y,  labels= model.y_))
+loss = tf.reduce_sum( tf.abs(tf.subtract(model.y,   model.y_)))**2
+#loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits( logits= model.y,  labels= model.y_))
 
 #loss_summary = tf.scalar_summary("loss", loss)
 
@@ -66,7 +66,7 @@ def tf_sgd_relu_nn2(sess1=0):
     sess =sess1
   last_loss=0
   loss_change_cnt = 0
-  learn_r = 0.01/banch_size
+  learn_r = 0.002/banch_size
   banch_i = 10000
   accuracy2 = 0
   banch_i = int(random.random()*max_cnt)

@@ -15,7 +15,7 @@ print(image_show.shape)
 
 sess = tf.InteractiveSession()
 saver = tf.train.Saver()
-saver.restore(sess, "save/model_t_same.ckpt")
+saver.restore(sess, "save/model_t_same_dict.ckpt")
 
 train_prediction = tf.nn.softmax(model.y)
  
@@ -42,7 +42,7 @@ for q in range(1,110):
 
   predict_time = 1
   for i in range(0,int(100 * 100)):
-      banch_size = 1
+      banch_size = 100
       train_batch_pointer = i*banch_size + int(random.random()*max_cnt)
       xs,x_digit, ys,yl,Word_mark,diff_w,sentence_data_t  = BTCC_data.LoadTrainBatch(train_batch_pointer,banch_size,predict_time)
       #print(x_digit)
@@ -67,7 +67,7 @@ for q in range(1,110):
         if(ys[ii][0] > ys[ii][1]):
           result  = "true"
 
-        if(yy[ii][0] > yy[ii][1] and result  == "true" ):
+        if(yy[ii][0] > yy[ii][1] and result  == "true" or yy[ii][0] < yy[ii][1] and result  == "false"):
           print("Minibatch accuracy: %.2f%% , %.6f%%" % (accuracy2 , l))
           print("---------------------")
           print(sentence_data_t[ii][0])

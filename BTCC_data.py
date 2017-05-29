@@ -10,8 +10,8 @@ from subprocess import call
 import tensorflow as tf
 
 num_images=0
-vector_w = 168
-sentence_len = 17
+vector_w = 1
+sentence_len = 12
 
 
 global BTCC_pro_data
@@ -125,9 +125,8 @@ def load_next_banch(start_index,banch_size,predict_time):
       while(position +100 < text_words ):
         position +=1
         k = position
-        if( lineu[k] =='：' or lineu[k] ==':' or lineu[k] =='“' or lineu[k] =='"'):
-          #or lineu[k] =='，' or lineu[k] =='，' or  lineu[k] =='。'or lineu[k] ==';' or lineu[k] =='！'or lineu[k] =='？' or lineu[k] =='”' 
-          #  or lineu[k] ==':'  or lineu[k] =='.' or lineu[k] ==';' or lineu[k] =='!' or lineu[k] =='?' or lineu[k] =='"' ):
+        if( lineu[k] =='，' or lineu[k] =='，' or  lineu[k] =='。'or lineu[k] ==';' or lineu[k] =='！'or lineu[k] =='？' or lineu[k] =='”' 
+            or lineu[k] ==':'  or lineu[k] =='.' or lineu[k] ==';' or lineu[k] =='!' or lineu[k] =='?' or lineu[k] =='"' ):
             break;
 
       position +=1
@@ -149,10 +148,12 @@ def load_next_banch(start_index,banch_size,predict_time):
           #print( lineu[k],dict_index[lineu[k]] )
           sentence += lineu[k]
           #word_v = dict_vector[dict_index[lineu[k]]] 
-          word_v = np.zeros([168])
-          word_v[int(dict_index[lineu[k]]/84)+128] = 1
-          word_v[int(dict_index[lineu[k]]%84)] = 1
+          word_v = dict_index[lineu[k]] #np.zeros([168])
+          #word_v[dict_index[lineu[k]]] = 1
+          #word_v[int(dict_index[lineu[k]]%84)] = 1
           #，。;！？”“
+          if(lineu[k] ==' ' or lineu[k] =='　'):
+            continue
           if(lineu[k] ==','  or lineu[k] ==','
             or lineu[k] =='，'  or lineu[k] =='“'):
           #print(line_v)
@@ -160,7 +161,7 @@ def load_next_banch(start_index,banch_size,predict_time):
 
              #print (lineu[k]) lineu[k] =='：'  or
           if((( lineu[k] =='，') and (position_t-position >7)) or 
-            lineu[k] =='。'or lineu[k] ==';' or lineu[k] =='！'or lineu[k] =='？' or lineu[k] =='”' 
+            lineu[k] =='。' or lineu[k] ==';' or lineu[k] =='！'or lineu[k] =='？' or lineu[k] =='”' 
             or lineu[k] =='.' or lineu[k] ==';' or lineu[k] =='!' or lineu[k] =='?' or lineu[k] =='"' ):
               break
 
@@ -278,16 +279,16 @@ def LoadBatchData(xss,num_train_images,train_batch_pointer,batch_size,predict_ti
           img_index = 3
         #print(img_index)
         y_out_test = []
-        if random.random() < 1.1 :
+        if random.random() < 0.5 :
           img_index1 = int(random.random()*num_train_images)
           img_index2 = int(random.random()*num_train_images)
           img_index3 = int(random.random()*num_train_images)
-          y_out_test = np.array([0,1])
+          y_out_test = np.array([1000])
         else :
           img_index1 = img_index - 3
           img_index2 = img_index - 2
           img_index3 = img_index - 1
-          y_out_test = np.array([1,0])
+          y_out_test = np.array([0])
 
         y_out_test2.append(y_out_test)
         data_buf1 = get_xdigit(img_index1)
@@ -336,22 +337,24 @@ def LoadBatchData(xss,num_train_images,train_batch_pointer,batch_size,predict_ti
         y = get_xdigit(img_index)
 
         diff = zeros(sentence_len*3, dtype=float)
+        '''
         for i in range(0,sentence_len*3-1):
           diff2 = 0
           for j in range(0,vector_w):
             diff2 += input_dialog[(i+1)*vector_w+j] - input_dialog[i*vector_w+j]
           diff[i] = diff2/vector_w
-
+        '''
         diff_s.append(diff)
 
         #print(y[1])
         #print(y.shape)
-        yy = np.zeros([sentence_len*vector_w], dtype=float)
 
+        yy = np.zeros([sentence_len*vector_w], dtype=float)
+        '''
         for tt in range(0,min(len(y),sentence_len)):
           for j in range(0,vector_w):
             yy[tt*vector_w+j] = float(y[tt][j])
-
+        '''
         #print("show,yy")
         #plt.imshow(yy.reshape(3*16,4*16))
         #plt.show()
@@ -368,7 +371,7 @@ def LoadBatchData(xss,num_train_images,train_batch_pointer,batch_size,predict_ti
         print(np.sum(yy))
         '''
         #print(yy.shape)
-        y_out.append(yy)
+        #y_out.append(yy)
         #print(data_buf1.shape)
         #data_mean = (data_buf1+data_buf2+data_buf3)/3
         #print (data_mean)
@@ -439,7 +442,7 @@ def LoadBatchData(xss,num_train_images,train_batch_pointer,batch_size,predict_ti
         y_out2[jj][ii] = y_out[jj][ii]
     '''
 
-    return x_out,x_digit, y_out_test2 , y_last_out ,Word_mark2 ,diff_s2 ,sentence_data_t
+    return x_out,x_digit2, y_out_test2 , y_last_out ,Word_mark2 ,diff_s2 ,sentence_data_t
 
 def LoadTrainBatch(train_batch_pointer,batch_size,predict_time):
   return LoadBatchData(train_xs,num_train_images,train_batch_pointer,batch_size,predict_time)
